@@ -1,4 +1,6 @@
 package com.crowdstreet.backend.dto;
 
-public record DocumentWithCallbackDTO(String body, String callback) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record DocumentWithCallbackDTO(@JsonProperty("body") String body, @JsonProperty("callback") String callback) {
 }
