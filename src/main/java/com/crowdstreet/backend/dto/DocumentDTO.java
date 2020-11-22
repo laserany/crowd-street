@@ -1,4 +1,6 @@
 package com.crowdstreet.backend.dto;
 
-public record DocumentDTO(String body) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record DocumentDTO(@JsonProperty("body") String body) {
 }
