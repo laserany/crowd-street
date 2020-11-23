@@ -3,10 +3,12 @@ package com.crowdstreet.backend.controllers;
 import com.crowdstreet.backend.configuration.ThirdService;
 import com.crowdstreet.backend.dto.DocumentDTO;
 import com.crowdstreet.backend.dto.DocumentWithCallbackDTO;
+import com.crowdstreet.backend.dto.StatusDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -42,7 +44,12 @@ public class BackendController {
     }
 
     @PostMapping("/callback/{id}")
-    public ResponseEntity<String> receiveRequest(@RequestBody String status) {
+    public ResponseEntity<String> postRequestStatus(@RequestBody String status) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/callback/{id}")
+    public ResponseEntity<String> updateRequestStatus(@RequestBody StatusDTO statusDTO) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

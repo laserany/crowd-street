@@ -3,6 +3,8 @@ package com.crowdstreet.backend.controllers;
 import com.crowdstreet.backend.configuration.ThirdService;
 import com.crowdstreet.backend.dto.DocumentDTO;
 import com.crowdstreet.backend.dto.DocumentWithCallbackDTO;
+import com.crowdstreet.backend.dto.StatusDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +46,7 @@ class BackendControllerTest {
     public void shouldReturnOkResponseIfCallToThirdServiceWasSuccessful() throws Exception {
         this.mockMvc.perform(post("/request")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(new DocumentDTO("testRequest")))
+                .content(writeValueAsJson(new DocumentDTO("testRequest")))
                 .param("callbackURL", "testCallbackURL"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -58,7 +60,7 @@ class BackendControllerTest {
         doThrow(Exception.class).when(thirdService).processDocument(any(DocumentWithCallbackDTO.class));
         this.mockMvc.perform(post("/request")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(new DocumentDTO("testRequest"))))
+                .content(writeValueAsJson(new DocumentDTO("testRequest"))))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Call to Third Service has failed. Please Contact Customer Support."));
@@ -77,11 +79,24 @@ class BackendControllerTest {
     }
 
     @Test
-    public void shouldReturnNoContentResponseForCallbackEndpoint() throws Exception {
+    public void shouldReturnNoContentResponseForCallbackPostEndpoint() throws Exception {
         this.mockMvc.perform(post("/callback/1")
         .contentType(MediaType.APPLICATION_JSON)
         .content("STARTED"))
         .andDo(print())
         .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void shouldReturnNoContentResponseForCallbackPutEndpoint() throws Exception {
+        this.mockMvc.perform(post("/callback/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(writeValueAsJson(new StatusDTO("PROCESSED", "Document has been processed."))))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+    }
+
+    private String writeValueAsJson(Object object) throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(object);
     }
 }
