@@ -5,5 +5,5 @@ import com.crowdstreet.backend.dto.DocumentWithCallbackDTO;
 
 public interface ThirdService {
     @LambdaFunction(functionName="third-service")
-    String processDocument(DocumentWithCallbackDTO request);
+    void processDocument(DocumentWithCallbackDTO request) throws Exception;
 }
