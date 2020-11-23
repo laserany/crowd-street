@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,6 +20,11 @@ class BackendConfigurationTest {
     @Test
     public void assertThatThirdServiceBeanExists() {
         assertNotNull(applicationContext.getBean(ThirdService.class));
+    }
+
+    @Test
+    public void assertThatRestTemplateBeanExists() {
+        assertNotNull(applicationContext.getBean(RestTemplate.class));
     }
 
     @Test

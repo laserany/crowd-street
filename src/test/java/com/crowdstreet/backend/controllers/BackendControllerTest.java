@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,6 +32,8 @@ class BackendControllerTest {
 
     @MockBean
     ThirdService thirdService;
+    @MockBean
+    RestTemplate restTemplate;
 
     @Test
     public void contextLoads() throws Exception {
@@ -47,6 +50,7 @@ class BackendControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("Your request has been submitted."));
         verify(thirdService).processDocument(any(DocumentWithCallbackDTO.class));
+        verify(restTemplate).postForEntity(contains("/callback"), eq("STARTED"), eq(String.class));
     }
 
     @Test
@@ -59,6 +63,7 @@ class BackendControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Call to Third Service has failed. Please Contact Customer Support."));
         verify(thirdService).processDocument(any(DocumentWithCallbackDTO.class));
+        verify(restTemplate, times(0)).postForEntity(contains("/callback"), eq("STARTED"), eq(String.class));
     }
 
     @Test
@@ -68,6 +73,7 @@ class BackendControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
         verify(thirdService, times(0)).processDocument(any(DocumentWithCallbackDTO.class));
+        verify(restTemplate, times(0)).postForEntity(contains("/callback"), eq("STARTED"), eq(String.class));
     }
 
     @Test
