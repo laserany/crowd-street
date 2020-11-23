@@ -8,6 +8,7 @@ import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableEncryptableProperties
@@ -24,6 +25,11 @@ public class BackendConfiguration {
                 .lambdaClient(AWSLambdaClientBuilder.standard().
                 withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKeyId, awsSecretAccessKey))).
                 withRegion(Regions.US_EAST_1).build()).build(ThirdService.class);
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }
 
