@@ -4,13 +4,11 @@ import com.crowdstreet.backend.configuration.ThirdService;
 import com.crowdstreet.backend.dto.DocumentDTO;
 import com.crowdstreet.backend.dto.DocumentWithCallbackDTO;
 import com.crowdstreet.backend.dto.StatusDTO;
+import com.crowdstreet.backend.dto.StatusWithRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -51,5 +49,10 @@ public class BackendController {
     @PutMapping("/callback/{id}")
     public ResponseEntity<String> updateRequestStatus(@RequestBody StatusDTO statusDTO) {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/status/{id}")
+    public ResponseEntity<StatusWithRequestDTO> getRequestStatus() {
+        return new ResponseEntity<>(new StatusWithRequestDTO("test1", "test2", "test2"), HttpStatus.OK);
     }
 }
