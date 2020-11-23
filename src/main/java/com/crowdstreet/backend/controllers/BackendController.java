@@ -30,4 +30,9 @@ public class BackendController {
         }
         return new ResponseEntity<>("Your request has been submitted.", HttpStatus.OK);
     }
+
+    @PostMapping("/callback/{id}")
+    public ResponseEntity<String> receiveRequest(@RequestBody String status) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

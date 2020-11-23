@@ -64,9 +64,18 @@ class BackendControllerTest {
     @Test
     public void shouldReturnBadRequestResponseIfRequestIsNull() throws Exception {
         this.mockMvc.perform(post("/request")
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("STARTED"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
         verify(thirdService, times(0)).processDocument(any(DocumentWithCallbackDTO.class));
+    }
+
+    @Test
+    public void shouldReturnNoContentResponseForCallbackEndpoint() throws Exception {
+        this.mockMvc.perform(post("/callback/1")
+        .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isNoContent());
     }
 }
