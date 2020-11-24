@@ -1,3 +1,7 @@
+/*
+Unit tests that are testing the functionality of our DB Service. This is mocking the call to the DB.
+ */
+
 package com.crowdstreet.backend.service;
 
 import com.crowdstreet.backend.dto.StatusDTO;
@@ -9,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

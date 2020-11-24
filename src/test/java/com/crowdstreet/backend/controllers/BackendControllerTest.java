@@ -1,3 +1,10 @@
+/*
+This is used to test the endpoints that our controller has. TestRestTemplate is being used alongside
+with a random port. This is also testing that sessions gets inserted to H2 Database successfully.
+This is more of an integration test as this is actually calling the H2 database and not mocking it.
+In real world, more tests should be done and integration tests should be seperated from Unit Tests.
+ */
+
 package com.crowdstreet.backend.controllers;
 
 import com.crowdstreet.backend.configuration.ThirdService;

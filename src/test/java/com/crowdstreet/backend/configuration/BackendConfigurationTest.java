@@ -1,3 +1,8 @@
+/*
+This class tests that the beans are instantiated correctly and that jasypt is decrypting the values
+correctly.
+ */
+
 package com.crowdstreet.backend.configuration;
 
 import org.junit.jupiter.api.Test;
@@ -8,6 +13,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
+
+import java.sql.Connection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,6 +44,11 @@ class BackendConfigurationTest {
     @Test
     public void assertThatPlatformTransactionManagerBeanExists() {
         assertNotNull(applicationContext.getBean(PlatformTransactionManager.class));
+    }
+
+    @Test
+    public void assertThatConnectionBeanExists() {
+        assertNotNull(applicationContext.getBean(Connection.class));
     }
 
     @Test
