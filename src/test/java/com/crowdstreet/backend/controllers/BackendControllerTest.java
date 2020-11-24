@@ -4,6 +4,9 @@ import com.crowdstreet.backend.configuration.ThirdService;
 import com.crowdstreet.backend.dto.DocumentDTO;
 import com.crowdstreet.backend.dto.DocumentWithCallbackDTO;
 import com.crowdstreet.backend.dto.StatusDTO;
+import com.crowdstreet.backend.dto.StatusWithTimeDTO;
+import com.crowdstreet.backend.service.DBService;
+import com.crowdstreet.backend.util.DBUtility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +17,12 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
 import java.net.URI;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,6 +36,10 @@ class BackendControllerTest {
     private BackendController backendController;
     @Autowired
     private TestRestTemplate testRestTemplate;
+    @Autowired
+    private Connection connection;
+    @Autowired
+    private DBUtility dbUtility;
 
     @LocalServerPort
     int randomServerPort;
@@ -43,6 +48,8 @@ class BackendControllerTest {
     private ThirdService thirdService;
     @MockBean
     private RestTemplate restTemplate;
+    @MockBean
+    private DBService dbService;
 
     private String baseURL;
     private HttpHeaders headers;
@@ -108,14 +115,28 @@ class BackendControllerTest {
         HttpEntity<StatusDTO> request = new HttpEntity<>(new StatusDTO("PROCESSED", "Document has been processed.", "1"), headers);
         ResponseEntity<String> result = testRestTemplate.exchange(uri, HttpMethod.PUT, request, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-        assertEquals("Request with ID 1 does not exist", result.getBody());
+        assertEquals("Request with ID 1 does not exist.", result.getBody());
     }
 
     @Test
-    public void shouldReturnRequestStatusForgivenId() throws Exception {
-        URI uri = new URI(baseURL + "/status/1");
-        ResponseEntity<StatusDTO> result = testRestTemplate.getForEntity(uri, StatusDTO.class);
+    public void shouldReturnRequestStatusForGivenId() throws Exception {
+        String primaryID = "testPrimaryID";
+        String requestID = "testRequestID";
+        Long creationTime = 123L;
+        Long lastAccessedTime = 456L;
+        StatusDTO statusDTO = new StatusDTO("testStatus", "testDetail", "testBody");
+        Map<String, StatusDTO> primaryIDAndStatusDTO = new HashMap<>();
+        Map<String, Long> creationAndLastAccessedTimeMap = new HashMap<>();
+        primaryIDAndStatusDTO.put(primaryID, statusDTO);
+        creationAndLastAccessedTimeMap.put("creation_time", creationTime);
+        creationAndLastAccessedTimeMap.put("last_access_time", lastAccessedTime);
+        StatusWithTimeDTO  statusWithTimeDTO = new StatusWithTimeDTO(statusDTO.status(), statusDTO.detail(), statusDTO.body(), creationTime, lastAccessedTime);
+        when(dbService.getPrimaryIDAndStatusDTOFromRequestID(requestID)).thenReturn(primaryIDAndStatusDTO);
+        when(dbService.getCreationTimeAndLastAccessTimeForAGivenPrimaryID(primaryID)).thenReturn(creationAndLastAccessedTimeMap);
+        URI uri = new URI(baseURL + "/status/%s".formatted(requestID));
+        ResponseEntity<StatusWithTimeDTO> result = testRestTemplate.getForEntity(uri, StatusWithTimeDTO.class);
         assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(statusWithTimeDTO, result.getBody());
     }
 
     @Test
@@ -139,8 +160,7 @@ class BackendControllerTest {
         testRestTemplate.postForObject(uri, request, String.class);
         List<byte[]> queryResponse = getSessionAttributeBytesFromDatabase();
         assertEquals(1, queryResponse.size());
-        ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(queryResponse.get(0)));
-        HashMap<String, StatusDTO> obj = (HashMap<String, StatusDTO>) in.readObject();
+        HashMap<String, StatusDTO> obj = (HashMap<String, StatusDTO>) dbUtility.attributeBytesToObjectConvertor(queryResponse.get(0));
         assertEquals(statusDTO, obj.get("1"));
     }
 
@@ -168,15 +188,12 @@ class BackendControllerTest {
     }
 
     private ResultSet getResultSet(String sql) throws SQLException {
-
-        Connection conn = DriverManager.getConnection("jdbc:h2:mem:testdb", "sa", "");
-        Statement stat = conn.createStatement();
+        Statement stat = connection.createStatement();
         return stat.executeQuery(sql);
     }
 
     private void clearSpringSessionTables() throws SQLException {
-        Connection conn = DriverManager.getConnection("jdbc:h2:mem:testdb", "sa", "");
-        Statement stat = conn.createStatement();
+        Statement stat = connection.createStatement();
         stat.execute("DELETE FROM SPRING_SESSION");
         stat.execute("DELETE FROM SPRING_SESSION_ATTRIBUTES");
     }
