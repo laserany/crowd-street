@@ -1,35 +1,23 @@
 name: Node.js CI
 
-on:
-  push:
-    branches:
-      - frontend-test
+on: [push]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    name: Run tests
+
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
+
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Node.js 14
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
-          node-version: '14'
-      - name: Build with Maven
-      - run: npm install && npm run build && npm test
+          node-version: ${{ matrix.node-version }}
+      - run: npm install
+      - run: npm run build --if-present
+      - run: npm test
         env:
           CI: true
-  update-frontend-prod-branch:
-    needs: test
-    name: Merge frontend-test into frontend-prod after tests run successfully
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: merge
-        uses: mtanzi/action-automerge@v1
-        id: merge
-        with:
-          github_token: ${{ github.token }}
-          source: 'frontend-test'
-          target: 'frontend-prod'
