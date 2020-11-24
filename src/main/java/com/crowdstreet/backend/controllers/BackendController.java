@@ -50,7 +50,7 @@ public class BackendController {
             StatusDTO statusDTO = new StatusDTO("STARTED", "Document processing has started.", documentDTO.body());
             restTemplate.postForEntity(fullPath.replace(relativePath, callbackWithId), statusDTO, StatusDTO.class);
         } catch (Exception e) {
-            logger.error("Call to Third Service has failed.");
+            logger.error("Call to Third Service has failed.", e);
             return new ResponseEntity<>("Call to Third Service has failed. Please Contact Customer Support.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>("Your request has been submitted.", HttpStatus.OK);
@@ -85,7 +85,7 @@ public class BackendController {
     }
 
     @GetMapping("/status/{id}")
-    public ResponseEntity<StatusWithTimeDTO> getRequestStatus(@PathVariable("id") String requestID, HttpSession session) throws SQLException, IOException, ClassNotFoundException {
+    public ResponseEntity<StatusWithTimeDTO> getRequestStatus(@PathVariable("id") String requestID, HttpSession session) {
         if(session.getAttribute("requestStatuses") != null) {
             logger.info("Status for request ID %s is in session Therefor grabbing status from session.".formatted(requestID));
             StatusDTO statusDTO = ((Map<String, StatusDTO>) session.getAttribute("requestStatuses")).get(requestID);
@@ -94,10 +94,19 @@ public class BackendController {
             return new ResponseEntity<>(new StatusWithTimeDTO(statusDTO.status(), statusDTO.detail(), statusDTO.body(), creationTime, lastAccessedTime), HttpStatus.OK);
         } else {
             logger.info("Status for request ID %s is not in session therefor calling DB.".formatted(requestID));
-            Map<String, StatusDTO> primaryIDAndStatusDTO = dbService.getPrimaryIDAndStatusDTOFromRequestID(requestID);
-            String primaryID = primaryIDAndStatusDTO.keySet().toArray()[0].toString();
-            StatusDTO statusDTO = primaryIDAndStatusDTO.get(primaryID);
-            Map<String, Long> creationAndLastAccessedTimeMap = dbService.getCreationTimeAndLastAccessTimeForAGivenPrimaryID(primaryID);
+            StatusDTO statusDTO;
+            Map<String, Long> creationAndLastAccessedTimeMap;
+            try {
+                Map<String, StatusDTO> primaryIDAndStatusDTO = dbService.getPrimaryIDAndStatusDTOFromRequestID(requestID);
+                logger.info("PrimaryID and StatusDTO was retrieved successfully.");
+                String primaryID = primaryIDAndStatusDTO.keySet().toArray()[0].toString();
+                statusDTO = primaryIDAndStatusDTO.get(primaryID);
+                creationAndLastAccessedTimeMap = dbService.getCreationTimeAndLastAccessTimeForAGivenPrimaryID(primaryID);
+            } catch (Exception e) {
+                logger.error("Call to DB has failed.", e);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            logger.info("Creation time and last access time was retrieved successfully.");
             return new ResponseEntity<>(new StatusWithTimeDTO(statusDTO.status(), statusDTO.detail(), statusDTO.body(), creationAndLastAccessedTimeMap.get("creation_time"), creationAndLastAccessedTimeMap.get("last_access_time")), HttpStatus.OK);
         }
     }

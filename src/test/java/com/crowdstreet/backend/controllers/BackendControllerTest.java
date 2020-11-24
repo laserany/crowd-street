@@ -119,7 +119,7 @@ class BackendControllerTest {
     }
 
     @Test
-    public void shouldReturnRequestStatusForGivenId() throws Exception {
+    public void shouldReturnRequestStatusOkForGivenIdWhenCallToDBWasSuccessful() throws Exception {
         String primaryID = "testPrimaryID";
         String requestID = "testRequestID";
         Long creationTime = 123L;
@@ -137,6 +137,25 @@ class BackendControllerTest {
         ResponseEntity<StatusWithTimeDTO> result = testRestTemplate.getForEntity(uri, StatusWithTimeDTO.class);
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(statusWithTimeDTO, result.getBody());
+    }
+
+    @Test
+    public void shouldReturnRequestStatusInternalServerErrorForGivenIdWhenCallToDBFailed() throws Exception {
+        String primaryID = "testPrimaryID";
+        String requestID = "testRequestID";
+        Long creationTime = 123L;
+        Long lastAccessedTime = 456L;
+        StatusDTO statusDTO = new StatusDTO("testStatus", "testDetail", "testBody");
+        Map<String, StatusDTO> primaryIDAndStatusDTO = new HashMap<>();
+        Map<String, Long> creationAndLastAccessedTimeMap = new HashMap<>();
+        primaryIDAndStatusDTO.put(primaryID, statusDTO);
+        creationAndLastAccessedTimeMap.put("creation_time", creationTime);
+        creationAndLastAccessedTimeMap.put("last_access_time", lastAccessedTime);
+        when(dbService.getPrimaryIDAndStatusDTOFromRequestID(requestID)).thenThrow(Exception.class);
+        when(dbService.getCreationTimeAndLastAccessTimeForAGivenPrimaryID(primaryID)).thenThrow(Exception.class);
+        URI uri = new URI(baseURL + "/status/%s".formatted(requestID));
+        ResponseEntity<StatusWithTimeDTO> result = testRestTemplate.getForEntity(uri, StatusWithTimeDTO.class);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
     }
 
     @Test

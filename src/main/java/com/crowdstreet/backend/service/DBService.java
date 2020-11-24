@@ -5,10 +5,8 @@ import com.crowdstreet.backend.util.DBUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
@@ -20,7 +18,7 @@ public class DBService {
     @Autowired
     private DBUtility dbUtility;
 
-    public Map<String, Long> getCreationTimeAndLastAccessTimeForAGivenPrimaryID(String primaryID) throws SQLException {
+    public Map<String, Long> getCreationTimeAndLastAccessTimeForAGivenPrimaryID(String primaryID) throws Exception {
         Map<String, Long> creationAndLastAccessTime = new HashMap<>();
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("""
@@ -33,7 +31,7 @@ public class DBService {
         return creationAndLastAccessTime;
     }
 
-    public Map<String, StatusDTO> getPrimaryIDAndStatusDTOFromRequestID(String requestID) throws SQLException, IOException, ClassNotFoundException {
+    public Map<String, StatusDTO> getPrimaryIDAndStatusDTOFromRequestID(String requestID) throws Exception {
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("""
                 SELECT * FROM SPRING_SESSION_ATTRIBUTES

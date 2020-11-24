@@ -44,7 +44,7 @@ class DBServiceTest {
     }
 
     @Test
-    public void testGetCreationTimeAndLastAccessTimeForAGivenPrimaryID() throws SQLException {
+    public void testGetCreationTimeAndLastAccessTimeForAGivenPrimaryID() throws Exception {
         Long creationTime = 123L;
         Long lastAccessedTime = 456L;
         String primaryId = "testPrimaryID";
@@ -56,7 +56,7 @@ class DBServiceTest {
     }
 
     @Test
-    public void testGetPrimaryIDAndStatusDTOFromRequestID() throws SQLException, IOException, ClassNotFoundException {
+    public void testGetPrimaryIDAndStatusDTOFromRequestID() throws Exception {
         String requestID = "testRequestID";
         String primaryID = "testPrimaryID";
         StatusDTO statusDTO = new StatusDTO("testStatus", "testDetail", "testBody");

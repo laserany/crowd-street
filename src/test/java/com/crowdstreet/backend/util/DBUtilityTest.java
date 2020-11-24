@@ -20,7 +20,7 @@ class DBUtilityTest {
     }
 
     @Test
-    public void testObjectToAttributeBytesConvertor() throws IOException, ClassNotFoundException {
+    public void testObjectToAttributeBytesConvertor() throws IOException {
         assertArrayEquals(new byte[]{-84, -19, 0, 5, 116, 0, 4, 116, 101, 115, 116}, dbUtility.objectToAttributeBytesConvertor("test"));
     }
 
