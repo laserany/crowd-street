@@ -17,6 +17,8 @@ jobs:
           node-version: '14'
       - name: Build with Maven
       - run: npm install && npm run build && npm test
+        env:
+          CI: true
   update-frontend-prod-branch:
     needs: test
     name: Merge frontend-test into frontend-prod after tests run successfully
