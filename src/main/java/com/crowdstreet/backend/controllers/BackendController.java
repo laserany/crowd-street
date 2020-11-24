@@ -1,3 +1,16 @@
+/*
+This Controller has all the four endpoints needed for the projects. Details are
+explained for each endpoint below.
+
+The main structure is to store the request statuses to the JDBC session in the H2 in memory database.
+However this is not recommended for production. In production, a real Database should be used instead to
+persist the data but for simplicity i'm only storing the status in session using in memory database.
+We also shouldn't depend solely on the session in production.
+Other recommendations is to cache the data when making get requests. Also statuses can be stored
+in a static variable (HOWEVER THIS IS NOT Recommended as this can cause a lot of issues specially in multi-thread
+environment).
+ */
+
 package com.crowdstreet.backend.controllers;
 
 import com.crowdstreet.backend.configuration.ThirdService;
@@ -16,8 +29,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +48,7 @@ public class BackendController {
     @PostMapping("/request")
     public ResponseEntity<String> submitRequest(@RequestBody DocumentDTO documentDTO, HttpSession session) {
         logger.trace("incoming Document DTO %s.".formatted(documentDTO.toString()));
+        //this uuid is used to create a unique request ID
         String uuid = UUID.randomUUID().toString();
         logger.trace("Unique Request ID is %s.".formatted(uuid));
         String callbackWithId = String.format("/callback/%s", uuid);
@@ -45,9 +57,11 @@ public class BackendController {
             String fullPath = ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
             String relativePath = ServletUriComponentsBuilder.fromCurrentRequest().build().getPath();
             logger.info("Calling Third Service.");
+            //This is to call AWS lambda. The call is real but the function does nothing for simplicity
             thirdService.processDocument(request);
             logger.info("Call to Third Service succeeded.");
             StatusDTO statusDTO = new StatusDTO("STARTED", "Document processing has started.", documentDTO.body());
+            //This is to simulate the call from 3rd service to the call back URL
             restTemplate.postForEntity(fullPath.replace(relativePath, callbackWithId), statusDTO, StatusDTO.class);
         } catch (Exception e) {
             logger.error("Call to Third Service has failed.", e);
@@ -59,6 +73,7 @@ public class BackendController {
     @PostMapping("/callback/{id}")
     public ResponseEntity<String> postRequestStatus(@PathVariable("id") String id, @RequestBody StatusDTO status, HttpSession session) {
         logger.info("Post call from Third Service with status %s.".formatted(status.toString()));
+        //Posting status to session as a map that has the request unique ID as the key and statusDTO(status,detail,body) as value
         Map<String, StatusDTO> statusMap = session.getAttribute("requestStatuses") == null? new HashMap<>(): (Map<String, StatusDTO>) session.getAttribute("requestStatuses");
         statusMap.put(id, status);
         session.setAttribute("requestStatuses", statusMap);
@@ -70,6 +85,9 @@ public class BackendController {
     public ResponseEntity<String> updateRequestStatus(@PathVariable("id") String id, @RequestBody StatusDTO status, HttpSession session) {
         logger.info("Update call from Third Service with status %s.".formatted(status.toString()));
         Map<String, StatusDTO> statusMap = (Map<String, StatusDTO>) session.getAttribute("requestStatuses");
+        //updating the status, needed to make sure we are providing the right status and that the
+        // unique Request ID actually exists
+        //otherwise a different response status should be sent
         if(statusMap == null || !statusMap.containsKey(id)) {
             logger.error("statusMap was either Null or the request ID %s did not exist".formatted(id));
             return new ResponseEntity<>(String.format("Request with ID %s does not exist.", id), HttpStatus.BAD_REQUEST);
@@ -86,6 +104,8 @@ public class BackendController {
 
     @GetMapping("/status/{id}")
     public ResponseEntity<StatusWithTimeDTO> getRequestStatus(@PathVariable("id") String requestID, HttpSession session) {
+        //trying to retrieve the data based on the given ID. If it was already stored in the session then
+        //we can retrieve it from the session otherwise we have to call the DB to achieve that.
         if(session.getAttribute("requestStatuses") != null) {
             logger.info("Status for request ID %s is in session Therefor grabbing status from session.".formatted(requestID));
             StatusDTO statusDTO = ((Map<String, StatusDTO>) session.getAttribute("requestStatuses")).get(requestID);

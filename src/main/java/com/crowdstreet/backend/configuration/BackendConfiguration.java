@@ -1,3 +1,9 @@
+/*
+This Configuration class is used to instantiate some beans, enable JDBC sesion and Jasypt encrypted properties!
+Good examples provided here are calling AWS as third service and calling the DB. Since Beans are singleton
+by default then instantiating them in a singleton bean improves the performance significantly.
+ */
+
 package com.crowdstreet.backend.configuration;
 
 import com.amazonaws.auth.*;
@@ -32,6 +38,10 @@ public class BackendConfiguration extends AbstractHttpSessionApplicationInitiali
     @Value("${aws.secret.access.key}")
     private String awsSecretAccessKey;
 
+    //This is to call AWS Lambda. Yes this is actually calling my lambda function in my AWS account
+    //However IAM role was created so that it is only authorized to invoke the function.
+    //The function does nothing (for simplicity sake) and the access key and secret key are
+    //encrypted using Jasypt library
     @Bean
     public ThirdService thirdService() {
         return LambdaInvokerFactory.builder()
@@ -45,6 +55,8 @@ public class BackendConfiguration extends AbstractHttpSessionApplicationInitiali
         return new RestTemplate();
     }
 
+    //I'm using H2 for storing sessions. However this is not recommended in production.
+    //H2 is just for in-memory and we need a real database for persisting the data.
     @Bean
     public EmbeddedDatabase dataSource() {
         return new EmbeddedDatabaseBuilder()
