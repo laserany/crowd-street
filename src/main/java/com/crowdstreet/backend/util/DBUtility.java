@@ -11,7 +11,7 @@ public class DBUtility {
         return new ObjectInputStream(new ByteArrayInputStream(attributeBytes)).readObject();
     }
 
-    public byte[] objectToAttributeBytesConvertor(Object object) throws IOException, ClassNotFoundException {
+    public byte[] objectToAttributeBytesConvertor(Object object) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
         objectOutputStream.writeObject(object);
