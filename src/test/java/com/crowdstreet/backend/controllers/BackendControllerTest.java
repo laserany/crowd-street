@@ -12,9 +12,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
@@ -32,7 +29,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class BackendControllerTest {
 
     @Autowired
@@ -52,7 +48,8 @@ class BackendControllerTest {
     private HttpHeaders headers;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws SQLException {
+        clearSpringSessionTables();
         baseURL = "http://localhost:"+randomServerPort;
         headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -147,8 +144,7 @@ class BackendControllerTest {
         assertEquals(statusDTO, obj.get("1"));
     }
 
-    private List<String> getSessionIdsFromDatabase()
-            throws SQLException {
+    private List<String> getSessionIdsFromDatabase() throws SQLException {
 
         List<String> result = new ArrayList<>();
         ResultSet rs = getResultSet(
@@ -160,12 +156,10 @@ class BackendControllerTest {
         return result;
     }
 
-    private List<byte[]> getSessionAttributeBytesFromDatabase()
-            throws SQLException {
+    private List<byte[]> getSessionAttributeBytesFromDatabase() throws SQLException {
 
         List<byte[]> result = new ArrayList<>();
-        ResultSet rs = getResultSet(
-                "SELECT * FROM SPRING_SESSION_ATTRIBUTES");
+        ResultSet rs = getResultSet("SELECT * FROM SPRING_SESSION_ATTRIBUTES");
 
         while (rs.next()) {
             result.add(rs.getBytes("ATTRIBUTE_BYTES"));
@@ -173,13 +167,18 @@ class BackendControllerTest {
         return result;
     }
 
-    private ResultSet getResultSet(String sql)
-            throws SQLException {
+    private ResultSet getResultSet(String sql) throws SQLException {
 
-        Connection conn = DriverManager
-                .getConnection("jdbc:h2:mem:testdb", "sa", "");
+        Connection conn = DriverManager.getConnection("jdbc:h2:mem:testdb", "sa", "");
         Statement stat = conn.createStatement();
         return stat.executeQuery(sql);
+    }
+
+    private void clearSpringSessionTables() throws SQLException {
+        Connection conn = DriverManager.getConnection("jdbc:h2:mem:testdb", "sa", "");
+        Statement stat = conn.createStatement();
+        stat.execute("DELETE FROM SPRING_SESSION");
+        stat.execute("DELETE FROM SPRING_SESSION_ATTRIBUTES");
     }
 
 }

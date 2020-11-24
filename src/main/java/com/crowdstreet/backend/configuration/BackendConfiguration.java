@@ -46,7 +46,9 @@ public class BackendConfiguration extends AbstractHttpSessionApplicationInitiali
     public EmbeddedDatabase dataSource() {
         return new EmbeddedDatabaseBuilder()
                 .setType(EmbeddedDatabaseType.H2)
-                .addScript("org/springframework/session/jdbc/schema-h2.sql").build();
+                .addScripts("org/springframework/session/jdbc/schema-drop-h2.sql",
+                            "org/springframework/session/jdbc/schema-h2.sql")
+                .build();
     }
 
     @Bean
