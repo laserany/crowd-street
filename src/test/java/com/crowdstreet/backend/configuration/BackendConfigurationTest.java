@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +27,16 @@ class BackendConfigurationTest {
     @Test
     public void assertThatRestTemplateBeanExists() {
         assertNotNull(applicationContext.getBean(RestTemplate.class));
+    }
+
+    @Test
+    public void assertThatEmbeddedDatabaseBeanExists() {
+        assertNotNull(applicationContext.getBean(EmbeddedDatabase.class));
+    }
+
+    @Test
+    public void assertThatPlatformTransactionManagerBeanExists() {
+        assertNotNull(applicationContext.getBean(PlatformTransactionManager.class));
     }
 
     @Test
