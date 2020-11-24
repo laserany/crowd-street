@@ -13,6 +13,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
+import org.springframework.session.web.context.AbstractHttpSessionApplicationInitializer;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,7 +22,7 @@ import javax.sql.DataSource;
 @Configuration
 @EnableEncryptableProperties
 @EnableJdbcHttpSession
-public class BackendConfiguration {
+public class BackendConfiguration extends AbstractHttpSessionApplicationInitializer {
 
     @Value("${aws.access.key.id}")
     private String awsAccessKeyId;

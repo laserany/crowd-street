@@ -4,73 +4,58 @@ import com.crowdstreet.backend.configuration.ThirdService;
 import com.crowdstreet.backend.dto.DocumentDTO;
 import com.crowdstreet.backend.dto.DocumentWithCallbackDTO;
 import com.crowdstreet.backend.dto.StatusDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.session.SessionRepository;
-import org.springframework.session.web.http.SessionRepositoryFilter;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.*;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
 
-import java.net.URISyntaxException;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.net.URI;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@WebAppConfiguration
+@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class BackendControllerTest {
 
     @Autowired
     private BackendController backendController;
     @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private WebApplicationContext wac;
+    private TestRestTemplate testRestTemplate;
 
-    @Autowired
-    private SessionRepository sessionRepository;
-
-    @Autowired
-    private SessionRepositoryFilter sessionRepositoryFilter;
+    @LocalServerPort
+    int randomServerPort;
 
     @MockBean
-    ThirdService thirdService;
+    private ThirdService thirdService;
     @MockBean
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
-    private MockMvc mockMvcWithSpringSession;
+    private String baseURL;
+    private HttpHeaders headers;
+
     @BeforeEach
-    public void setup() throws URISyntaxException {
-
-        this.mockMvcWithSpringSession = MockMvcBuilders
-                .webAppContextSetup(wac)
-                .addFilter(sessionRepositoryFilter)
-                .build();
+    public void setUp() {
+        baseURL = "http://localhost:"+randomServerPort;
+        headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
     @Test
@@ -80,13 +65,12 @@ class BackendControllerTest {
 
     @Test
     public void shouldReturnOkResponseIfCallToThirdServiceWasSuccessful() throws Exception {
-        this.mockMvc.perform(post("/request")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(writeValueAsJson(new DocumentDTO("testRequest")))
-                .param("callbackURL", "testCallbackURL"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string("Your request has been submitted."));
+
+        URI uri = new URI(baseURL + "/request");
+        HttpEntity<DocumentDTO> request = new HttpEntity<>(new DocumentDTO("testRequest"), headers);
+        ResponseEntity<String> result = testRestTemplate.postForEntity(uri, request, String.class);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals("Your request has been submitted.", result.getBody());
         verify(thirdService).processDocument(any(DocumentWithCallbackDTO.class));
         verify(restTemplate).postForEntity(contains("/callback"), eq(new StatusDTO("STARTED", "Document processing has started.", "testRequest")), eq(StatusDTO.class));
     }
@@ -94,57 +78,108 @@ class BackendControllerTest {
     @Test
     public void shouldReturnInternalServerErrorResponseIfCallToThirdServiceFailed() throws Exception {
         doThrow(Exception.class).when(thirdService).processDocument(any(DocumentWithCallbackDTO.class));
-        this.mockMvc.perform(post("/request")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(writeValueAsJson(new DocumentDTO("testRequest"))))
-                .andDo(print())
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Call to Third Service has failed. Please Contact Customer Support."));
+        URI uri = new URI(baseURL + "/request");
+        HttpEntity<DocumentDTO> request = new HttpEntity<>(new DocumentDTO("testRequest"), headers);
+        ResponseEntity<String> result = testRestTemplate.postForEntity(uri, request, String.class);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertEquals("Call to Third Service has failed. Please Contact Customer Support.", result.getBody());
         verify(thirdService).processDocument(any(DocumentWithCallbackDTO.class));
         verify(restTemplate, times(0)).postForEntity(contains("/callback"), eq(new StatusDTO("STARTED", "Document processing has started.", "testRequest")), eq(StatusDTO.class));
     }
 
     @Test
     public void shouldReturnBadRequestResponseIfRequestIsNull() throws Exception {
-        this.mockMvc.perform(post("/request")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
+        URI uri = new URI(baseURL + "/request");
+        HttpEntity<DocumentDTO> request = null;
+        ResponseEntity<String> result = testRestTemplate.postForEntity(uri, request, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
         verify(thirdService, times(0)).processDocument(any(DocumentWithCallbackDTO.class));
         verify(restTemplate, times(0)).postForEntity(contains("/callback"), eq(new StatusDTO("STARTED", "Document processing has started.", "testRequest")), eq(StatusDTO.class));
     }
 
     @Test
     public void shouldReturnNoContentResponseForCallbackPostEndpoint() throws Exception {
-        this.mockMvc.perform(post("/callback/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(writeValueAsJson(new StatusDTO("PROCESSED", "Document has been processed.", "1"))))
-                .andDo(print())
-                .andExpect(status().isNoContent());
-
+        URI uri = new URI(baseURL + "/callback/1");
+        HttpEntity<StatusDTO> request = new HttpEntity<>(new StatusDTO("PROCESSED", "Document has been processed.", "1"), headers);
+        ResponseEntity<String> result = testRestTemplate.postForEntity(uri, request, String.class);
+        assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
     }
 
     @Test
-    public void shouldReturnNoContentResponseForCallbackPutEndpoint() throws Exception {
-        HashMap<String, StatusDTO> testo = new HashMap<>();
-        testo.put("1", new StatusDTO("test", "test", "test"));
-        this.mockMvcWithSpringSession.perform(put("/callback/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(writeValueAsJson(new StatusDTO("PROCESSED", "Document has been processed.", "1")))
-                .sessionAttr("requestStatuses", testo))
-                .andDo(print())
-                .andExpect(status().isNoContent());
+    public void shouldReturnBadRequestResponseForCallbackPutEndpointWhenRequestIDDoesNotExist() throws Exception {
+        URI uri = new URI(baseURL + "/callback/1");
+        HttpEntity<StatusDTO> request = new HttpEntity<>(new StatusDTO("PROCESSED", "Document has been processed.", "1"), headers);
+        ResponseEntity<String> result = testRestTemplate.exchange(uri, HttpMethod.PUT, request, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertEquals("Request with ID 1 does not exist", result.getBody());
     }
 
     @Test
     public void shouldReturnRequestStatusForgivenId() throws Exception {
-        this.mockMvc.perform(get("/status/1")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().isOk());
+        URI uri = new URI(baseURL + "/status/1");
+        ResponseEntity<StatusDTO> result = testRestTemplate.getForEntity(uri, StatusDTO.class);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
-    private String writeValueAsJson(Object object) throws JsonProcessingException {
-        return new ObjectMapper().writeValueAsString(object);
+    @Test
+    public void whenH2DbIsNotQueriedthenSessionInfoIsEmpty() throws Exception {
+        assertEquals(0, getSessionIdsFromDatabase().size());
+        assertEquals(0, getSessionAttributeBytesFromDatabase().size());
     }
+
+    @Test
+    public void whenH2DbIsQueriedthenOneSessionIsCreated() throws Exception {
+        URI uri = new URI(baseURL + "/status/1");
+        testRestTemplate.getForEntity(uri, String.class);
+        assertEquals(1, getSessionIdsFromDatabase().size());
+    }
+
+    @Test
+    public void whenDataIsInsertedIntoH2DbthenSessionAttributeIsRetrieved() throws Exception {
+        URI uri = new URI(baseURL + "/callback/1");
+        StatusDTO statusDTO = new StatusDTO("PROCESSED", "Document has been processed.", "1");
+        HttpEntity<StatusDTO> request = new HttpEntity<>(statusDTO, headers);
+        testRestTemplate.postForObject(uri, request, String.class);
+        List<byte[]> queryResponse = getSessionAttributeBytesFromDatabase();
+        assertEquals(1, queryResponse.size());
+        ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(queryResponse.get(0)));
+        HashMap<String, StatusDTO> obj = (HashMap<String, StatusDTO>) in.readObject();
+        assertEquals(statusDTO, obj.get("1"));
+    }
+
+    private List<String> getSessionIdsFromDatabase()
+            throws SQLException {
+
+        List<String> result = new ArrayList<>();
+        ResultSet rs = getResultSet(
+                "SELECT * FROM SPRING_SESSION");
+
+        while (rs.next()) {
+            result.add(rs.getString("SESSION_ID"));
+        }
+        return result;
+    }
+
+    private List<byte[]> getSessionAttributeBytesFromDatabase()
+            throws SQLException {
+
+        List<byte[]> result = new ArrayList<>();
+        ResultSet rs = getResultSet(
+                "SELECT * FROM SPRING_SESSION_ATTRIBUTES");
+
+        while (rs.next()) {
+            result.add(rs.getBytes("ATTRIBUTE_BYTES"));
+        }
+        return result;
+    }
+
+    private ResultSet getResultSet(String sql)
+            throws SQLException {
+
+        Connection conn = DriverManager
+                .getConnection("jdbc:h2:mem:testdb", "sa", "");
+        Statement stat = conn.createStatement();
+        return stat.executeQuery(sql);
+    }
+
 }
