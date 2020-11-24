@@ -17,3 +17,17 @@ jobs:
       - run: npm test
         env:
           CI: true
+  update-frontend-prod-branch:
+    needs: build
+    name: Merge frontend-test into frontend-prod after tests run successfully
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: merge
+        uses: mtanzi/action-automerge@v1
+        id: merge
+        with:
+          github_token: ${{ github.token }}
+          source: 'frontend-test'
+          target: 'frontend-prod'
