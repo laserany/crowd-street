@@ -18,6 +18,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 @Configuration
 @EnableEncryptableProperties
@@ -54,6 +57,11 @@ public class BackendConfiguration extends AbstractHttpSessionApplicationInitiali
     @Bean
     public PlatformTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean
+    public Connection connection() throws SQLException {
+        return DriverManager.getConnection("jdbc:h2:mem:testdb", "sa", "");
     }
 }
 
