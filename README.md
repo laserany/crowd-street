@@ -8,8 +8,8 @@ inside .github/workflows/backend.yml file.
 (if tests succeeds otherwise I receive an email for test failures). Therefor please pull from backend-prod branch to run the final code.
 
 ## Part2: Requirments to run the project locally
-1- You need Java 15 (If you don't have it, easy solution is to dockerize it. Example on how to do this is here https://www.baeldung.com/dockerizing-spring-boot-application)
-2- one VM option must be passed which is 
+1. You need Java 15 (If you don't have it, easy solution is to dockerize it. Example on how to do this is here https://www.baeldung.com/dockerizing-spring-boot-application)
+2. one VM option must be passed which is 
 -Djasypt.encryptor.password=${password}.
 The password will be provided securely over email.
 
