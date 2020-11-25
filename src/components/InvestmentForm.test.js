@@ -14,14 +14,20 @@ test('assert that InvestmentForm Component has correct placeholders', () => {
   ).toBeDefined()
 })
 
-test('asset that InvestmentForm has the right elements', () => {
+test('assert that InvestmentForm has the right elements', () => {
   const investmentForm = render(<InvestmentForm />)
-  const allTextBoxes = investmentForm.getAllByRole('textbox')
-  expect(5).toEqual(allTextBoxes.length)
-  expect('formHorizontalInvestmentAmount').toEqual(allTextBoxes[0].id)
-  expect('formHorizontalInvestmentType').toEqual(allTextBoxes[1].id)
-  expect('formHorizontalTotalNetWorth').toEqual(allTextBoxes[2].id)
-  expect('formHorizontalEstimatedYearlyIncome').toEqual(allTextBoxes[3].id)
-  expect('formHorizontalEstimatedCreditScore').toEqual(allTextBoxes[4].id)
+  const formFields = investmentForm.getAllByRole('textbox')
+  expect(5).toEqual(formFields.length)
+  expect('formHorizontalInvestmentAmount').toEqual(formFields[0].id)
+  expect('formHorizontalInvestmentType').toEqual(formFields[1].id)
+  expect('formHorizontalTotalNetWorth').toEqual(formFields[2].id)
+  expect('formHorizontalEstimatedYearlyIncome').toEqual(formFields[3].id)
+  expect('formHorizontalEstimatedCreditScore').toEqual(formFields[4].id)
   expect(investmentForm.getByRole('button')).toBeDefined()
+})
+
+test('assert that all form fields are required', () => {
+  const investmentForm = render(<InvestmentForm />)
+  const formFields = investmentForm.getAllByRole('textbox')
+  expect(formFields.every((i) => i.required)).toBeTruthy()
 })

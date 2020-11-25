@@ -12,14 +12,14 @@ const InvestmentForm = () => {
             <InputGroup.Prepend>
               <InputGroup.Text>$</InputGroup.Text>
             </InputGroup.Prepend>
-            <Form.Control placeholder='Investment Amount' />
+            <Form.Control required placeholder='Investment Amount' />
           </InputGroup>
         </Col>
       </Form.Group>
       <Form.Group as={Row} controlId='formHorizontalInvestmentType'>
         <Col sm={8}></Col>
         <Col sm={3}>
-          <Form.Control placeholder='Investment Type' />
+          <Form.Control required placeholder='Investment Type' />
           <Form.Text className='text-white'>
             Bond, Stocks, Real Estate etc.
           </Form.Text>
@@ -32,7 +32,7 @@ const InvestmentForm = () => {
             <InputGroup.Prepend>
               <InputGroup.Text>$</InputGroup.Text>
             </InputGroup.Prepend>
-            <Form.Control placeholder='Total Net Worth' />
+            <Form.Control required placeholder='Total Net Worth' />
           </InputGroup>
         </Col>
       </Form.Group>
@@ -43,14 +43,14 @@ const InvestmentForm = () => {
             <InputGroup.Prepend>
               <InputGroup.Text>$</InputGroup.Text>
             </InputGroup.Prepend>
-            <Form.Control placeholder='Estimated Yearly Income' />
+            <Form.Control required placeholder='Estimated Yearly Income' />
           </InputGroup>
         </Col>
       </Form.Group>
       <Form.Group as={Row} controlId='formHorizontalEstimatedCreditScore'>
         <Col sm={8}></Col>
         <Col sm={3}>
-          <Form.Control placeholder='Estimated Credit Score' />
+          <Form.Control required placeholder='Estimated Credit Score' />
           <Form.Text className='text-white'>Number from 300-850</Form.Text>
         </Col>
       </Form.Group>
