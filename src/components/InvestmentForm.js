@@ -20,7 +20,7 @@ const InvestmentForm = () => {
         <Col sm={8}></Col>
         <Col sm={3}>
           <Form.Control placeholder='Investment Type' />
-          <Form.Text className='testo'>
+          <Form.Text className='text-white'>
             Bond, Stocks, Real Estate etc.
           </Form.Text>
         </Col>

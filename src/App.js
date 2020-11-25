@@ -1,8 +1,13 @@
+import React from 'react'
 import './App.css'
 import InvestmentForm from './components/InvestmentForm'
 
 const App = () => {
-  return <InvestmentForm />
+  return (
+    <React.Fragment>
+      <InvestmentForm />
+    </React.Fragment>
+  )
 }
 
 export default App
