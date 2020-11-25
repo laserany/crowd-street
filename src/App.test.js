@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from '@testing-library/react'
+import App from './App'
+import InvestmentForm from './components/InvestmentForm'
+import TestRenderer from 'react-test-renderer'
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
-});
+test('assert that InvestmentForm Component is inside App Component', () => {
+  const appRenderer = TestRenderer.create(<App />)
+  expect(appRenderer.toTree().rendered['type']).toEqual(InvestmentForm)
+})
