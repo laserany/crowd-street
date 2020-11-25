@@ -5,6 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-image: url('https://www.clsinvest.com/wp-content/uploads/2017/01/GettyImages-490918202.jpg');
+  background-size: cover;
 }
 
 code {
