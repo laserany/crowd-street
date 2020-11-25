@@ -54,7 +54,7 @@ const InvestmentForm = () => {
           <Form.Text className='text-white'>Number from 300-850</Form.Text>
         </Col>
       </Form.Group>
-      <Form.Group as={Row} controlId='formHorizontalEstimatedCreditScore'>
+      <Form.Group as={Row} controlId='formHorizontalSubmitButton'>
         <Col sm={8}></Col>
         <Col sm={3}>
           <Button variant='light'>Apply Now</Button>
