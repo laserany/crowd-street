@@ -1,6 +1,6 @@
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import InvestmentForm from './InvestmentForm'
-import investmentFormSubmitter from './InvestmentForm.test.helper'
+import investmentFormSubmitter from './InvestmentForm.test.helper.js'
 
 let investmentForm
 window.alert = jest.fn()
