@@ -5,11 +5,31 @@ import { Formik } from 'formik'
 import * as Yup from 'yup'
 
 const schema = Yup.object({
-  investmentAmount: Yup.string().required(),
+  investmentAmount: Yup.string()
+    .required()
+    .matches(
+      '^(\\d+(\\.\\d{2})?)$',
+      'Invalid input! please provide input in correct format(e.g 1000.00 or 1000)'
+    ),
   investmentType: Yup.string().required(),
-  totalNetWorth: Yup.string().required(),
-  estimatedYearlyIncome: Yup.string().required(),
-  estimatedCreditScore: Yup.string().required(),
+  totalNetWorth: Yup.string()
+    .required()
+    .matches(
+      '^(\\d+(\\.\\d{2})?)$',
+      'Invalid input! please provide input in correct format(e.g 1000.00 or 1000)'
+    ),
+  estimatedYearlyIncome: Yup.string()
+    .required()
+    .matches(
+      '^(\\d+(\\.\\d{2})?)$',
+      'Invalid input! please provide input in correct format(e.g 1000.00 or 1000)'
+    ),
+  estimatedCreditScore: Yup.string()
+    .required()
+    .matches(
+      '^(([3-7]\\d{2})|(8[0-4]\\d)|(850))$',
+      'Invalid input! Credit score must be a number between 300 and 850'
+    ),
 })
 
 const InvestmentForm = () => {
@@ -25,7 +45,14 @@ const InvestmentForm = () => {
         estimatedCreditScore: '',
       }}
     >
-      {({ handleSubmit, handleChange, touched, values, errors }) => (
+      {({
+        handleSubmit,
+        handleChange,
+        handleBlur,
+        touched,
+        values,
+        errors,
+      }) => (
         <Form noValidate onSubmit={handleSubmit} className='mt-6'>
           <Form.Group as={Row} controlId='formHorizontalInvestmentAmount'>
             <Col sm={8}></Col>
@@ -38,8 +65,11 @@ const InvestmentForm = () => {
                   name='investmentAmount'
                   value={values.investmentAmount}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   isValid={touched.investmentAmount && !errors.investmentAmount}
-                  isInvalid={!!errors.investmentAmount}
+                  isInvalid={
+                    touched.investmentAmount && !!errors.investmentAmount
+                  }
                   placeholder='Investment Amount'
                 />
                 <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
@@ -56,8 +86,9 @@ const InvestmentForm = () => {
                 name='investmentType'
                 value={values.investmentType}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 isValid={touched.investmentType && !errors.investmentType}
-                isInvalid={!!errors.investmentType}
+                isInvalid={touched.investmentType && !!errors.investmentType}
                 placeholder='Investment Type'
               />
               <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
@@ -80,8 +111,9 @@ const InvestmentForm = () => {
                   name='totalNetWorth'
                   value={values.totalNetWorth}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   isValid={touched.totalNetWorth && !errors.totalNetWorth}
-                  isInvalid={!!errors.totalNetWorth}
+                  isInvalid={touched.totalNetWorth && !!errors.totalNetWorth}
                   placeholder='Total Net Worth'
                 />
                 <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
@@ -102,11 +134,15 @@ const InvestmentForm = () => {
                   name='estimatedYearlyIncome'
                   value={values.estimatedYearlyIncome}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   isValid={
                     touched.estimatedYearlyIncome &&
                     !errors.estimatedYearlyIncome
                   }
-                  isInvalid={!!errors.estimatedYearlyIncome}
+                  isInvalid={
+                    touched.estimatedYearlyIncome &&
+                    !!errors.estimatedYearlyIncome
+                  }
                   placeholder='Estimated Yearly Income'
                 />
                 <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
@@ -123,10 +159,13 @@ const InvestmentForm = () => {
                 name='estimatedCreditScore'
                 value={values.estimatedCreditScore}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 isValid={
                   touched.estimatedCreditScore && !errors.estimatedCreditScore
                 }
-                isInvalid={!!errors.estimatedCreditScore}
+                isInvalid={
+                  touched.estimatedCreditScore && !!errors.estimatedCreditScore
+                }
                 placeholder='Estimated Credit Score'
               />
               <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
