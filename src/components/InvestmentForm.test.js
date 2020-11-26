@@ -31,3 +31,17 @@ test('assert that all form fields are required', () => {
   const formFields = investmentForm.getAllByRole('textbox')
   expect(formFields.every((i) => i.required)).toBeTruthy()
 })
+
+test('assert that all currency inputs are prepended with a dolar sign', () => {
+  const investmentForm = render(<InvestmentForm />)
+  const inputGroups = investmentForm.container.querySelectorAll('.input-group')
+  expect(inputGroups[0].children[1]).toEqual(
+    investmentForm.getByPlaceholderText('Investment Amount')
+  )
+  expect(inputGroups[1].children[1]).toEqual(
+    investmentForm.getByPlaceholderText('Total Net Worth')
+  )
+  expect(inputGroups[2].children[1]).toEqual(
+    investmentForm.getByPlaceholderText('Estimated Yearly Income')
+  )
+})
