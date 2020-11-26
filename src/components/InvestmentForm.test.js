@@ -1,5 +1,6 @@
-import { render, fireEvent, waitFor, screen } from '@testing-library/react'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 import InvestmentForm from './InvestmentForm'
+import investmentFormSubmitter from './InvestmentForm.test.helper'
 
 let investmentForm
 window.alert = jest.fn()
@@ -57,61 +58,14 @@ test('assert that all form fields are required and invalid feedback is provided'
 })
 
 test('assert that valid feedback is provided for form fields that pass validation', async () => {
-  const investmentFormContainer = investmentForm.container
-
-  const investmentAmount = investmentFormContainer.querySelector(
-    '#formHorizontalInvestmentAmount'
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '350'
   )
-  const investmentType = investmentFormContainer.querySelector(
-    '#formHorizontalInvestmentType'
-  )
-  const totalNetWorth = investmentFormContainer.querySelector(
-    '#formHorizontalTotalNetWorth'
-  )
-  const estimatedYearlyIncome = investmentFormContainer.querySelector(
-    '#formHorizontalEstimatedYearlyIncome'
-  )
-  const estimatedCreditScore = investmentFormContainer.querySelector(
-    '#formHorizontalEstimatedCreditScore'
-  )
-
-  await waitFor(() => {
-    fireEvent.change(investmentAmount, {
-      target: {
-        value: 'testInvestmentAmount',
-      },
-    })
-  })
-  await waitFor(() => {
-    fireEvent.change(investmentType, {
-      target: {
-        value: 'testInvestmentType',
-      },
-    })
-  })
-  await waitFor(() => {
-    fireEvent.change(totalNetWorth, {
-      target: {
-        value: 'testTotalNetWorth',
-      },
-    })
-  })
-  await waitFor(() => {
-    fireEvent.change(estimatedYearlyIncome, {
-      target: {
-        value: 'testEstimatedYearlyIncome',
-      },
-    })
-  })
-  await waitFor(() => {
-    fireEvent.change(estimatedCreditScore, {
-      target: {
-        value: 'testEstimatedCreditScore',
-      },
-    })
-  })
-  const button = investmentForm.getByRole('button')
-  await waitFor(() => fireEvent.click(button))
   const validFeedbacks = investmentForm.container.querySelectorAll(
     '.valid-feedback'
   )
@@ -125,5 +79,55 @@ test('assert that valid feedback is provided for form fields that pass validatio
   expect(invalidFeedbacks.length).toEqual(5)
   invalidFeedbacks.forEach((invalidFeedback) =>
     expect(invalidFeedback.innerHTML).toEqual('')
+  )
+})
+
+test('assert that all currency inputs are in dollar format', async () => {
+  await investmentFormSubmitter(
+    investmentForm,
+    'invalidInvestmentAmount',
+    'testInvestmentType',
+    'invalidTotalNetWorthAmount',
+    'invalidEstimatedYearlyIncome',
+    '350'
+  )
+
+  const investmentAmountInvalidFeedback = investmentForm.container.querySelector(
+    '#formHorizontalInvestmentAmount + .valid-feedback + .invalid-feedback'
+  )
+  const totalNetWorthInvalidFeedback = investmentForm.container.querySelector(
+    '#formHorizontalTotalNetWorth + .valid-feedback + .invalid-feedback'
+  )
+  const estimatedYearlyIncomeInvalidFeedback = investmentForm.container.querySelector(
+    '#formHorizontalEstimatedYearlyIncome + .valid-feedback + .invalid-feedback'
+  )
+
+  expect(investmentAmountInvalidFeedback.innerHTML).toEqual(
+    'Invalid input! please provide input in correct format(e.g 1000.00 or 1000)'
+  )
+  expect(totalNetWorthInvalidFeedback.innerHTML).toEqual(
+    'Invalid input! please provide input in correct format(e.g 1000.00 or 1000)'
+  )
+  expect(estimatedYearlyIncomeInvalidFeedback.innerHTML).toEqual(
+    'Invalid input! please provide input in correct format(e.g 1000.00 or 1000)'
+  )
+})
+
+test('assert that credit score input is a number between 300-850', async () => {
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '200'
+  )
+
+  const creditScoreInvalidFeedback = investmentForm.container.querySelector(
+    '#formHorizontalEstimatedCreditScore + .valid-feedback + .invalid-feedback'
+  )
+
+  expect(creditScoreInvalidFeedback.innerHTML).toEqual(
+    'Invalid input! Credit score must be a number between 300 and 850'
   )
 })
