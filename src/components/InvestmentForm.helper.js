@@ -1,6 +1,5 @@
 export default function isQualified(values) {
   const investmentAmount = Number(values['investmentAmount'])
-  const investmentType = values['investmentType']
   const totalNetWorth = Number(values['totalNetWorth'])
   const estimatedYearlyIncome = Number(values['estimatedYearlyIncome'])
   const estimatedCreditScore = Number(values['estimatedCreditScore'])
