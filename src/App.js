@@ -1,12 +1,14 @@
 import React from 'react'
 import './App.css'
 import InvestmentForm from './components/InvestmentForm'
+import MyVerticallyCenteredModal from './components/MyVerticallyCenteredModal'
 
 const App = () => {
   return (
-    <React.Fragment>
+    <>
       <InvestmentForm />
-    </React.Fragment>
+      <MyVerticallyCenteredModal />
+    </>
   )
 }
 
