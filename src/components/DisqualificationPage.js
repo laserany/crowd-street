@@ -1,7 +1,7 @@
 import React from 'react'
 
 const DisqualificationPage = () => {
-  return <div>I'm a disqualification page!</div>
+  return <div></div>
 }
 
 export default DisqualificationPage
