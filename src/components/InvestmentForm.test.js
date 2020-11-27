@@ -3,14 +3,19 @@ import InvestmentForm from './InvestmentForm'
 import investmentFormSubmitter from './InvestmentForm.test.helper'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
+import { setQualified } from '../slices/QualifiedSlice'
+import * as redux from 'react-redux'
+import jest from 'jest-mock'
 
 let investmentForm
-window.alert = jest.fn()
 
 const middlewares = []
 const mockStore = configureStore(middlewares)
 const initialState = {}
 const store = mockStore(initialState)
+const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
+const mockDispatchFn = jest.fn()
+useDispatchSpy.mockReturnValue(mockDispatchFn)
 
 beforeEach(() => {
   investmentForm = render(
