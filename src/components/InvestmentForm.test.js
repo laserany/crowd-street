@@ -1,12 +1,23 @@
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import InvestmentForm from './InvestmentForm'
 import investmentFormSubmitter from './InvestmentForm.test.helper'
+import { Provider } from 'react-redux'
+import configureStore from 'redux-mock-store'
 
 let investmentForm
 window.alert = jest.fn()
 
+const middlewares = []
+const mockStore = configureStore(middlewares)
+const initialState = {}
+const store = mockStore(initialState)
+
 beforeEach(() => {
-  investmentForm = render(<InvestmentForm />)
+  investmentForm = render(
+    <Provider store={store}>
+      <InvestmentForm />
+    </Provider>
+  )
 })
 
 test('assert that InvestmentForm Component has correct placeholders', () => {
