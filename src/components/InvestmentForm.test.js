@@ -13,9 +13,6 @@ const middlewares = []
 const mockStore = configureStore(middlewares)
 const initialState = {}
 const store = mockStore(initialState)
-const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
-const mockDispatchFn = jest.fn()
-useDispatchSpy.mockReturnValue(mockDispatchFn)
 
 beforeEach(() => {
   investmentForm = render(
@@ -80,7 +77,7 @@ test('assert that valid feedback is provided for form fields that pass validatio
     'testInvestmentType',
     '50000',
     '25000.50',
-    '350'
+    '700'
   )
   const validFeedbacks = investmentForm.container.querySelectorAll(
     '.valid-feedback'
@@ -105,7 +102,7 @@ test('assert that all currency inputs are in dollar format', async () => {
     'testInvestmentType',
     'invalidTotalNetWorthAmount',
     'invalidEstimatedYearlyIncome',
-    '350'
+    '700'
   )
 
   const investmentAmountInvalidFeedback = investmentForm.container.querySelector(
@@ -146,4 +143,60 @@ test('assert that credit score input is a number between 300-850', async () => {
   expect(creditScoreInvalidFeedback.innerHTML).toEqual(
     'Invalid input! Credit score must be a number between 300 and 850'
   )
+})
+
+test('assert that qualified status is only set to true when conditions are met', async () => {
+  const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
+  const mockDispatchFn = jest.fn()
+  useDispatchSpy.mockReturnValue(mockDispatchFn)
+
+  investmentForm.rerender(
+    <Provider store={store}>
+      <InvestmentForm />
+    </Provider>
+  )
+
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '700'
+  )
+
+  expect(mockDispatchFn).toHaveBeenCalledTimes(1)
+
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '4000',
+    '700'
+  )
+
+  expect(mockDispatchFn).toHaveBeenCalledTimes(1)
+
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '500'
+  )
+
+  expect(mockDispatchFn).toHaveBeenCalledTimes(1)
+
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '30000',
+    '25000.50',
+    '700'
+  )
+
+  expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 })

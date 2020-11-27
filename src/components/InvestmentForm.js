@@ -5,6 +5,7 @@ import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { setQualified } from '../slices/QualifiedSlice'
 import { useDispatch } from 'react-redux'
+import isQualified from './InvestmentForm.helper'
 
 const schema = Yup.object({
   investmentAmount: Yup.string()
@@ -40,7 +41,9 @@ const InvestmentForm = () => {
     <div>
       <Formik
         validationSchema={schema}
-        onSubmit={(values) => dispatch(setQualified(true))}
+        onSubmit={(values) =>
+          isQualified(values) && dispatch(setQualified(true))
+        }
         initialValues={{
           investmentAmount: '',
           investmentType: '',
