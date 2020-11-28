@@ -6,6 +6,9 @@ import * as Yup from 'yup'
 import { setQualified } from '../slices/QualifiedSlice'
 import { useDispatch } from 'react-redux'
 import isQualified from './InvestmentForm.helper'
+import fetchMock from 'fetch-mock'
+
+window.formValues = {}
 
 const schema = Yup.object({
   investmentAmount: Yup.string()
@@ -37,24 +40,35 @@ const schema = Yup.object({
 
 const InvestmentForm = () => {
   const [spinner, setSpinner] = useState(false)
-
   useEffect(() => {
     if (spinner) {
       setTimeout(() => {
+        fetchMock.post(
+          'https://www.crowdstreets.com/backend',
+          new Promise((resolve, reject) => {
+            resolve({
+              body: isQualified(window.formValues)
+                ? 'Qualified'
+                : 'Disqualified',
+              status: 200,
+            })
+          }).then((response) => {
+            response.body === 'Qualified' && dispatch(setQualified(true))
+          }),
+          { overwriteRoutes: false }
+        )
         setSpinner(false)
       }, 2000)
     }
-  }, [spinner])
-
+  })
   const dispatch = useDispatch()
-
   return (
     <div>
       <Formik
         validationSchema={schema}
         onSubmit={(values) => {
+          window.formValues = values
           setSpinner(true)
-          isQualified(values) && dispatch(setQualified(true))
         }}
         initialValues={{
           investmentAmount: '',

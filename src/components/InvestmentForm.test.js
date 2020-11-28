@@ -1,11 +1,12 @@
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent, waitFor, act } from '@testing-library/react'
 import InvestmentForm from './InvestmentForm'
 import investmentFormSubmitter from './InvestmentForm.test.helper'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { setQualified } from '../slices/QualifiedSlice'
 import * as redux from 'react-redux'
 import jest from 'jest-mock'
+import { jest as global_jest } from '@jest/globals'
+import fetchMock from 'fetch-mock'
 
 let investmentForm
 
@@ -15,6 +16,7 @@ const initialState = {}
 const store = mockStore(initialState)
 
 beforeEach(() => {
+  global_jest.useFakeTimers()
   investmentForm = render(
     <Provider store={store}>
       <InvestmentForm />
@@ -79,6 +81,11 @@ test('assert that valid feedback is provided for form fields that pass validatio
     '25000.50',
     '700'
   )
+
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
+
   const validFeedbacks = investmentForm.container.querySelectorAll(
     '.valid-feedback'
   )
@@ -135,6 +142,9 @@ test('assert that credit score input is a number between 300-850', async () => {
     '25000.50',
     '200'
   )
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
 
   const creditScoreInvalidFeedback = investmentForm.container.querySelector(
     '#formHorizontalEstimatedCreditScore + .valid-feedback + .invalid-feedback'
@@ -150,12 +160,6 @@ test('assert that qualified status is only set to true when conditions are met',
   const mockDispatchFn = jest.fn()
   useDispatchSpy.mockReturnValue(mockDispatchFn)
 
-  investmentForm.rerender(
-    <Provider store={store}>
-      <InvestmentForm />
-    </Provider>
-  )
-
   await investmentFormSubmitter(
     investmentForm,
     '1000.00',
@@ -164,6 +168,10 @@ test('assert that qualified status is only set to true when conditions are met',
     '25000.50',
     '700'
   )
+
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
 
   expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 
@@ -176,6 +184,10 @@ test('assert that qualified status is only set to true when conditions are met',
     '700'
   )
 
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
+
   expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 
   await investmentFormSubmitter(
@@ -187,6 +199,10 @@ test('assert that qualified status is only set to true when conditions are met',
     '500'
   )
 
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
+
   expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 
   await investmentFormSubmitter(
@@ -197,6 +213,10 @@ test('assert that qualified status is only set to true when conditions are met',
     '25000.50',
     '700'
   )
+
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
 
   expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 })
@@ -221,4 +241,38 @@ test('assert that button changes to spinner when clicked', async () => {
   expect(
     investmentForm.queryByRole('button', { name: 'Please wait...' })
   ).toBeDefined()
+
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
+
+  expect(
+    investmentForm.queryByRole('button', { name: 'Apply Now' })
+  ).toBeDefined()
+  expect(
+    investmentForm.queryByRole('button', { name: 'Please wait...' })
+  ).toBeNull()
+})
+
+test('assert that backend is called when form is submitted', async () => {
+  const fetchMockSpy = jest.spyOn(fetchMock, 'post')
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '700'
+  )
+
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
+  expect(
+    fetchMockSpy
+  ).toHaveBeenCalledWith(
+    'https://www.crowdstreets.com/backend',
+    new Promise((resolve, reject) => null),
+    { method: 'post', overwriteRoutes: false }
+  )
 })
