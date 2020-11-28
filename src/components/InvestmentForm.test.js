@@ -6,7 +6,7 @@ import configureStore from 'redux-mock-store'
 import * as redux from 'react-redux'
 import jest from 'jest-mock'
 import { jest as global_jest } from '@jest/globals'
-import fetchMock from 'fetch-mock-jest'
+import fetchMock from 'fetch-mock'
 
 let investmentForm
 
