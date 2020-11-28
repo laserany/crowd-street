@@ -36,7 +36,6 @@ const schema = Yup.object({
 })
 
 const InvestmentForm = () => {
-  const dispatch = useDispatch()
   const [spinner, setSpinner] = useState(false)
 
   useEffect(() => {
@@ -46,6 +45,8 @@ const InvestmentForm = () => {
       }, 2000)
     }
   }, [spinner])
+
+  const dispatch = useDispatch()
 
   return (
     <div>
