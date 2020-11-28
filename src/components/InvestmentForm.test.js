@@ -200,3 +200,25 @@ test('assert that qualified status is only set to true when conditions are met',
 
   expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 })
+
+test('assert that button changes to spinner when clicked', async () => {
+  expect(
+    investmentForm.queryByRole('button', { name: 'Apply Now' })
+  ).toBeDefined()
+  expect(
+    investmentForm.queryByRole('button', { name: 'Please wait...' })
+  ).toBeNull()
+  await investmentFormSubmitter(
+    investmentForm,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '700'
+  )
+
+  expect(investmentForm.queryByRole('button', { name: 'Apply Now' })).toBeNull()
+  expect(
+    investmentForm.queryByRole('button', { name: 'Please wait...' })
+  ).toBeDefined()
+})

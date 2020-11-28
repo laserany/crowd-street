@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import './InvestmentForm.css'
-import { Form, InputGroup, Row, Col, Button } from 'react-bootstrap'
+import { Form, InputGroup, Row, Col, Button, Spinner } from 'react-bootstrap'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { setQualified } from '../slices/QualifiedSlice'
@@ -37,13 +37,24 @@ const schema = Yup.object({
 
 const InvestmentForm = () => {
   const dispatch = useDispatch()
+  const [spinner, setSpinner] = useState(false)
+
+  useEffect(() => {
+    if (spinner) {
+      setTimeout(() => {
+        setSpinner(false)
+      }, 2000)
+    }
+  }, [spinner])
+
   return (
     <div>
       <Formik
         validationSchema={schema}
-        onSubmit={(values) =>
+        onSubmit={(values) => {
+          setSpinner(true)
           isQualified(values) && dispatch(setQualified(true))
-        }
+        }}
         initialValues={{
           investmentAmount: '',
           investmentType: '',
@@ -193,9 +204,22 @@ const InvestmentForm = () => {
             <Form.Group as={Row} controlId='formHorizontalSubmitButton'>
               <Col sm={8}></Col>
               <Col sm={3}>
-                <Button variant='light' type='submit'>
-                  Apply Now
-                </Button>
+                {spinner ? (
+                  <Button variant='light' disabled>
+                    <Spinner
+                      as='span'
+                      animation='border'
+                      size='sm'
+                      role='status'
+                      aria-hidden='true'
+                    />
+                    Please wait...
+                  </Button>
+                ) : (
+                  <Button variant='light' type='submit'>
+                    Apply Now
+                  </Button>
+                )}
               </Col>
             </Form.Group>
           </Form>
