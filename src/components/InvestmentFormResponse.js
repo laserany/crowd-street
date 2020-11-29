@@ -1,22 +1,28 @@
 import React from 'react'
 import { Modal, Button } from 'react-bootstrap'
 import { useSelector, useDispatch } from 'react-redux'
-import { setQualified } from '../slices/QualifiedSlice'
+import { setShow } from '../slices/ShowSlice'
 
-const MyVerticallyCenteredModal = () => {
+const InvestmentFormResponse = () => {
   const qualified = useSelector((state) => state.qualified)
+  const badRequest = useSelector((state) => state.badRequest)
+  const show = useSelector((state) => state.show)
   const dispatch = useDispatch()
   return (
     <Modal
-      show={qualified}
-      onHide={() => dispatch(setQualified(false))}
+      show={show}
+      onHide={() => dispatch(setShow(false))}
       size='lg'
       aria-labelledby='contained-modal-title-vcenter'
       centered
     >
       <Modal.Header closeButton>
         <Modal.Title id='contained-modal-title-vcenter'>
-          Modal heading
+          {badRequest
+            ? 'Bad Request'
+            : qualified
+            ? 'Qualified'
+            : 'Disqualified'}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -28,10 +34,10 @@ const MyVerticallyCenteredModal = () => {
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => dispatch(setQualified(false))}>Close</Button>
+        <Button onClick={() => dispatch(setShow(false))}>Close</Button>
       </Modal.Footer>
     </Modal>
   )
 }
 
-export default MyVerticallyCenteredModal
+export default InvestmentFormResponse

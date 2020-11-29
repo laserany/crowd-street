@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import './InvestmentForm.css'
+import './InvestmentFormRequest.css'
 import { Form, InputGroup, Row, Col, Button, Spinner } from 'react-bootstrap'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { setQualified } from '../slices/QualifiedSlice'
 import { useDispatch } from 'react-redux'
-import isQualified from './InvestmentForm.helper'
+import isQualified from './InvestmentFormRequest.helper'
 import fetchMock from 'fetch-mock'
+import { setBadRequest } from '../slices/BadRequestSlice'
+import { setShow } from '../slices/ShowSlice'
 
 window.formValues = {}
 
@@ -38,7 +40,7 @@ const schema = Yup.object({
     ),
 })
 
-const InvestmentForm = () => {
+const InvestmentFormRequest = () => {
   const [spinner, setSpinner] = useState(false)
   useEffect(() => {
     if (spinner) {
@@ -46,14 +48,23 @@ const InvestmentForm = () => {
         fetchMock.post(
           'https://www.crowdstreets.com/backend',
           new Promise((resolve, reject) => {
-            resolve({
-              body: isQualified(window.formValues)
-                ? 'Qualified'
-                : 'Disqualified',
-              status: 200,
-            })
+            Number(window.formValues['investmentAmount']) > 9000000
+              ? resolve({
+                  body: 'Investment Amount is very large',
+                  status: 400,
+                })
+              : resolve({
+                  body: isQualified(window.formValues)
+                    ? 'Qualified'
+                    : 'Disqualified',
+                  status: 200,
+                })
           }).then((response) => {
-            response.body === 'Qualified' && dispatch(setQualified(true))
+            dispatch(setShow(true))
+            if (response.status === 400) dispatch(setBadRequest(true))
+            else if (response.body === 'Qualified') dispatch(setQualified(true))
+            else if (response.body === 'Disqualified')
+              dispatch(setQualified(false))
           }),
           { overwriteRoutes: false }
         )
@@ -244,4 +255,4 @@ const InvestmentForm = () => {
   )
 }
 
-export default InvestmentForm
+export default InvestmentFormRequest
