@@ -12,6 +12,7 @@ const InvestmentFormResponse = () => {
     <Modal
       show={show}
       onHide={() => dispatch(setShow(false))}
+      backdrop={!badRequest && 'static'}
       size='lg'
       aria-labelledby='contained-modal-title-vcenter'
       centered

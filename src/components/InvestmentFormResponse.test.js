@@ -163,3 +163,57 @@ test('assert that Modal Body Header is set based on the qualified and badRequest
     )
   ).toEqual('Investment Amount is too big')
 })
+
+test('assert that backdrop to static if not a bad request', () => {
+  initialState = { show: true, qualified: false, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+  expect(
+    investmentFormResponse.queryByText(
+      (content, element) => element.className === 'fade modal-backdrop show'
+    )
+  ).toBeDefined()
+
+  initialState = { show: true, qualified: false, badRequest: true }
+  store = mockStore(initialState)
+  investmentFormResponse.rerender(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+  expect(
+    investmentFormResponse.queryByText(
+      (content, element) => element.className === 'fade modal-backdrop show'
+    )
+  ).toBeNull()
+
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse.rerender(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+  expect(
+    investmentFormResponse.queryByText(
+      (content, element) => element.className === 'fade modal-backdrop show'
+    )
+  ).toBeDefined()
+
+  initialState = { show: true, qualified: true, badRequest: true }
+  store = mockStore(initialState)
+  investmentFormResponse.rerender(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+  expect(
+    investmentFormResponse.queryByText(
+      (content, element) => element.className === 'fade modal-backdrop show'
+    )
+  ).toBeNull()
+})
