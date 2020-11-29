@@ -1,28 +1,28 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
 export default async function investmentFormSubmitter(
-  investmentForm,
+  investmentFormRequest,
   investmentAmountInput,
   investmentTypeInput,
   totalNetWorthInput,
   estimatedYearlyIncomeInput,
   estimatedCreditScoreInput
 ) {
-  const investmentFormContainer = investmentForm.container
+  const investmentFormRequestContainer = investmentFormRequest.container
 
-  const investmentAmount = investmentFormContainer.querySelector(
+  const investmentAmount = investmentFormRequestContainer.querySelector(
     '#formHorizontalInvestmentAmount'
   )
-  const investmentType = investmentFormContainer.querySelector(
+  const investmentType = investmentFormRequestContainer.querySelector(
     '#formHorizontalInvestmentType'
   )
-  const totalNetWorth = investmentFormContainer.querySelector(
+  const totalNetWorth = investmentFormRequestContainer.querySelector(
     '#formHorizontalTotalNetWorth'
   )
-  const estimatedYearlyIncome = investmentFormContainer.querySelector(
+  const estimatedYearlyIncome = investmentFormRequestContainer.querySelector(
     '#formHorizontalEstimatedYearlyIncome'
   )
-  const estimatedCreditScore = investmentFormContainer.querySelector(
+  const estimatedCreditScore = investmentFormRequestContainer.querySelector(
     '#formHorizontalEstimatedCreditScore'
   )
 
@@ -61,6 +61,6 @@ export default async function investmentFormSubmitter(
       },
     })
   })
-  const button = investmentForm.getByRole('button')
+  const button = investmentFormRequest.getByRole('button')
   await waitFor(() => fireEvent.click(button))
 }

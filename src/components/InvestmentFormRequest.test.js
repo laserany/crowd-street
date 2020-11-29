@@ -1,6 +1,6 @@
 import { render, fireEvent, waitFor, act } from '@testing-library/react'
-import InvestmentForm from './InvestmentForm'
-import investmentFormSubmitter from './InvestmentForm.test.helper'
+import InvestmentFormRequest from './InvestmentFormRequest'
+import investmentFormSubmitter from './InvestmentFormRequest.test.helper'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import * as redux from 'react-redux'
@@ -11,7 +11,7 @@ import { setQualified } from '../slices/QualifiedSlice'
 import { setBadRequest } from '../slices/BadRequestSlice'
 import { setShow } from '../slices/ShowSlice'
 
-let investmentForm
+let investmentFormRequest
 
 const middlewares = []
 const mockStore = configureStore(middlewares)
@@ -20,53 +20,61 @@ const store = mockStore(initialState)
 
 beforeEach(() => {
   global_jest.useFakeTimers()
-  investmentForm = render(
+  investmentFormRequest = render(
     <Provider store={store}>
-      <InvestmentForm />
+      <InvestmentFormRequest />
     </Provider>
   )
 })
 
 test('assert that InvestmentForm Component has correct placeholders', () => {
-  expect(investmentForm.getByPlaceholderText('Investment Amount')).toBeDefined()
-  expect(investmentForm.getByPlaceholderText('Investment Type')).toBeDefined()
-  expect(investmentForm.getByPlaceholderText('Total Net Worth')).toBeDefined()
   expect(
-    investmentForm.getByPlaceholderText('Estimated Yearly Income')
+    investmentFormRequest.getByPlaceholderText('Investment Amount')
   ).toBeDefined()
   expect(
-    investmentForm.getByPlaceholderText('Estimated Credit Score')
+    investmentFormRequest.getByPlaceholderText('Investment Type')
+  ).toBeDefined()
+  expect(
+    investmentFormRequest.getByPlaceholderText('Total Net Worth')
+  ).toBeDefined()
+  expect(
+    investmentFormRequest.getByPlaceholderText('Estimated Yearly Income')
+  ).toBeDefined()
+  expect(
+    investmentFormRequest.getByPlaceholderText('Estimated Credit Score')
   ).toBeDefined()
 })
 
 test('assert that InvestmentForm has the right elements', () => {
-  const formFields = investmentForm.getAllByRole('textbox')
+  const formFields = investmentFormRequest.getAllByRole('textbox')
   expect(5).toEqual(formFields.length)
   expect('formHorizontalInvestmentAmount').toEqual(formFields[0].id)
   expect('formHorizontalInvestmentType').toEqual(formFields[1].id)
   expect('formHorizontalTotalNetWorth').toEqual(formFields[2].id)
   expect('formHorizontalEstimatedYearlyIncome').toEqual(formFields[3].id)
   expect('formHorizontalEstimatedCreditScore').toEqual(formFields[4].id)
-  expect(investmentForm.getByRole('button')).toBeDefined()
+  expect(investmentFormRequest.getByRole('button')).toBeDefined()
 })
 
 test('assert that all currency inputs are prepended with a dolar sign', () => {
-  const inputGroups = investmentForm.container.querySelectorAll('.input-group')
+  const inputGroups = investmentFormRequest.container.querySelectorAll(
+    '.input-group'
+  )
   expect(inputGroups[0].children[1]).toEqual(
-    investmentForm.getByPlaceholderText('Investment Amount')
+    investmentFormRequest.getByPlaceholderText('Investment Amount')
   )
   expect(inputGroups[1].children[1]).toEqual(
-    investmentForm.getByPlaceholderText('Total Net Worth')
+    investmentFormRequest.getByPlaceholderText('Total Net Worth')
   )
   expect(inputGroups[2].children[1]).toEqual(
-    investmentForm.getByPlaceholderText('Estimated Yearly Income')
+    investmentFormRequest.getByPlaceholderText('Estimated Yearly Income')
   )
 })
 
 test('assert that all form fields are required and invalid feedback is provided', async () => {
-  const button = investmentForm.getByRole('button')
+  const button = investmentFormRequest.getByRole('button')
   await waitFor(() => fireEvent.click(button))
-  const invalidFeedbacks = investmentForm.container.querySelectorAll(
+  const invalidFeedbacks = investmentFormRequest.container.querySelectorAll(
     '.invalid-feedback'
   )
   expect(invalidFeedbacks.length).toEqual(5)
@@ -77,7 +85,7 @@ test('assert that all form fields are required and invalid feedback is provided'
 
 test('assert that valid feedback is provided for form fields that pass validation', async () => {
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',
@@ -89,14 +97,14 @@ test('assert that valid feedback is provided for form fields that pass validatio
     global_jest.advanceTimersByTime(2000)
   })
 
-  const validFeedbacks = investmentForm.container.querySelectorAll(
+  const validFeedbacks = investmentFormRequest.container.querySelectorAll(
     '.valid-feedback'
   )
   expect(validFeedbacks.length).toEqual(5)
   validFeedbacks.forEach((validFeedback) =>
     expect(validFeedback.innerHTML).toEqual('Looks good!')
   )
-  const invalidFeedbacks = investmentForm.container.querySelectorAll(
+  const invalidFeedbacks = investmentFormRequest.container.querySelectorAll(
     '.invalid-feedback'
   )
   expect(invalidFeedbacks.length).toEqual(5)
@@ -107,7 +115,7 @@ test('assert that valid feedback is provided for form fields that pass validatio
 
 test('assert that all currency inputs are in dollar format', async () => {
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     'invalidInvestmentAmount',
     'testInvestmentType',
     'invalidTotalNetWorthAmount',
@@ -115,13 +123,13 @@ test('assert that all currency inputs are in dollar format', async () => {
     '700'
   )
 
-  const investmentAmountInvalidFeedback = investmentForm.container.querySelector(
+  const investmentAmountInvalidFeedback = investmentFormRequest.container.querySelector(
     '#formHorizontalInvestmentAmount + .valid-feedback + .invalid-feedback'
   )
-  const totalNetWorthInvalidFeedback = investmentForm.container.querySelector(
+  const totalNetWorthInvalidFeedback = investmentFormRequest.container.querySelector(
     '#formHorizontalTotalNetWorth + .valid-feedback + .invalid-feedback'
   )
-  const estimatedYearlyIncomeInvalidFeedback = investmentForm.container.querySelector(
+  const estimatedYearlyIncomeInvalidFeedback = investmentFormRequest.container.querySelector(
     '#formHorizontalEstimatedYearlyIncome + .valid-feedback + .invalid-feedback'
   )
 
@@ -138,7 +146,7 @@ test('assert that all currency inputs are in dollar format', async () => {
 
 test('assert that credit score input is a number between 300-850', async () => {
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',
@@ -149,7 +157,7 @@ test('assert that credit score input is a number between 300-850', async () => {
     global_jest.advanceTimersByTime(2000)
   })
 
-  const creditScoreInvalidFeedback = investmentForm.container.querySelector(
+  const creditScoreInvalidFeedback = investmentFormRequest.container.querySelector(
     '#formHorizontalEstimatedCreditScore + .valid-feedback + .invalid-feedback'
   )
 
@@ -164,7 +172,7 @@ test('assert that qualified status is only set to true when conditions are met',
   useDispatchSpy.mockReturnValue(mockDispatchFn)
 
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',
@@ -179,7 +187,7 @@ test('assert that qualified status is only set to true when conditions are met',
   expect(mockDispatchFn).toHaveBeenLastCalledWith(setQualified(true))
 
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',
@@ -194,7 +202,7 @@ test('assert that qualified status is only set to true when conditions are met',
   expect(mockDispatchFn).toHaveBeenLastCalledWith(setQualified(false))
 
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',
@@ -209,7 +217,7 @@ test('assert that qualified status is only set to true when conditions are met',
   expect(mockDispatchFn).toHaveBeenLastCalledWith(setQualified(false))
 
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '30000',
@@ -226,13 +234,13 @@ test('assert that qualified status is only set to true when conditions are met',
 
 test('assert that button changes to spinner when clicked', async () => {
   expect(
-    investmentForm.queryByRole('button', { name: 'Apply Now' })
+    investmentFormRequest.queryByRole('button', { name: 'Apply Now' })
   ).toBeDefined()
   expect(
-    investmentForm.queryByRole('button', { name: 'Please wait...' })
+    investmentFormRequest.queryByRole('button', { name: 'Please wait...' })
   ).toBeNull()
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',
@@ -240,9 +248,11 @@ test('assert that button changes to spinner when clicked', async () => {
     '700'
   )
 
-  expect(investmentForm.queryByRole('button', { name: 'Apply Now' })).toBeNull()
   expect(
-    investmentForm.queryByRole('button', { name: 'Please wait...' })
+    investmentFormRequest.queryByRole('button', { name: 'Apply Now' })
+  ).toBeNull()
+  expect(
+    investmentFormRequest.queryByRole('button', { name: 'Please wait...' })
   ).toBeDefined()
 
   await act(async () => {
@@ -250,17 +260,17 @@ test('assert that button changes to spinner when clicked', async () => {
   })
 
   expect(
-    investmentForm.queryByRole('button', { name: 'Apply Now' })
+    investmentFormRequest.queryByRole('button', { name: 'Apply Now' })
   ).toBeDefined()
   expect(
-    investmentForm.queryByRole('button', { name: 'Please wait...' })
+    investmentFormRequest.queryByRole('button', { name: 'Please wait...' })
   ).toBeNull()
 })
 
 test('assert that backend is called when form is submitted', async () => {
   const fetchMockSpy = jest.spyOn(fetchMock, 'post')
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',
@@ -286,7 +296,7 @@ test('assert that badRequest status is set to true when Investment Amount is ove
   useDispatchSpy.mockReturnValue(mockDispatchFn)
 
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '100000000.00',
     'testInvestmentType',
     '50000',
@@ -307,7 +317,7 @@ test('assert that show status is always set to true whenever a form has been sub
   useDispatchSpy.mockReturnValue(mockDispatchFn)
 
   await investmentFormSubmitter(
-    investmentForm,
+    investmentFormRequest,
     '1000.00',
     'testInvestmentType',
     '50000',

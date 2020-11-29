@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import './InvestmentForm.css'
+import './InvestmentFormRequest.css'
 import { Form, InputGroup, Row, Col, Button, Spinner } from 'react-bootstrap'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { setQualified } from '../slices/QualifiedSlice'
 import { useDispatch } from 'react-redux'
-import isQualified from './InvestmentForm.helper'
+import isQualified from './InvestmentFormRequest.helper'
 import fetchMock from 'fetch-mock'
 import { setBadRequest } from '../slices/BadRequestSlice'
 import { setShow } from '../slices/ShowSlice'
@@ -40,7 +40,7 @@ const schema = Yup.object({
     ),
 })
 
-const InvestmentForm = () => {
+const InvestmentFormRequest = () => {
   const [spinner, setSpinner] = useState(false)
   useEffect(() => {
     if (spinner) {
@@ -255,4 +255,4 @@ const InvestmentForm = () => {
   )
 }
 
-export default InvestmentForm
+export default InvestmentFormRequest
