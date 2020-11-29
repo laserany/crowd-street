@@ -2,6 +2,7 @@ import React from 'react'
 import { Modal, Button } from 'react-bootstrap'
 import { useSelector, useDispatch } from 'react-redux'
 import { setQualified } from '../slices/QualifiedSlice'
+import { setShow } from '../slices/ShowSlice'
 
 const MyVerticallyCenteredModal = () => {
   const qualified = useSelector((state) => state.qualified)
@@ -30,7 +31,7 @@ const MyVerticallyCenteredModal = () => {
         </p>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => dispatch(setQualified(false))}>Close</Button>
+        <Button onClick={() => dispatch(setShow(false))}>Close</Button>
       </Modal.Footer>
     </Modal>
   )

@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux'
 import isQualified from './InvestmentForm.helper'
 import fetchMock from 'fetch-mock'
 import { setBadRequest } from '../slices/BadRequestSlice'
+import { setShow } from '../slices/ShowSlice'
 
 window.formValues = {}
 
@@ -59,8 +60,11 @@ const InvestmentForm = () => {
                   status: 200,
                 })
           }).then((response) => {
+            dispatch(setShow(true))
             if (response.status === 400) dispatch(setBadRequest(true))
-            else response.body === 'Qualified' && dispatch(setQualified(true))
+            else if (response.body === 'Qualified') dispatch(setQualified(true))
+            else if (response.body === 'Disqualified')
+              dispatch(setQualified(false))
           }),
           { overwriteRoutes: false }
         )
