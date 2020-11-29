@@ -7,6 +7,8 @@ import * as redux from 'react-redux'
 import jest from 'jest-mock'
 import { jest as global_jest } from '@jest/globals'
 import fetchMock from 'fetch-mock'
+import { setQualified } from '../slices/QualifiedSlice'
+import { setBadRequest } from '../slices/BadRequestSlice'
 
 let investmentForm
 
@@ -173,6 +175,7 @@ test('assert that qualified status is only set to true when conditions are met',
     global_jest.advanceTimersByTime(2000)
   })
 
+  expect(mockDispatchFn).toHaveBeenCalledWith(setQualified(true))
   expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 
   await investmentFormSubmitter(
@@ -275,4 +278,26 @@ test('assert that backend is called when form is submitted', async () => {
     new Promise((resolve, reject) => null),
     { method: 'post', overwriteRoutes: false }
   )
+})
+
+test('assert that badRequest status is set to true when Investment Amount is over 9 million', async () => {
+  const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
+  const mockDispatchFn = jest.fn()
+  useDispatchSpy.mockReturnValue(mockDispatchFn)
+
+  await investmentFormSubmitter(
+    investmentForm,
+    '100000000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '700'
+  )
+
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
+
+  expect(mockDispatchFn).toHaveBeenCalledWith(setBadRequest(true))
+  expect(mockDispatchFn).toHaveBeenCalledTimes(1)
 })

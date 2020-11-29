@@ -5,11 +5,13 @@ import { setQualified } from '../slices/QualifiedSlice'
 
 const MyVerticallyCenteredModal = () => {
   const qualified = useSelector((state) => state.qualified)
+  const badRequest = useSelector((state) => state.badRequest)
+  const show = useSelector((state) => state.show)
   const dispatch = useDispatch()
   return (
     <Modal
-      show={qualified}
-      onHide={() => dispatch(setQualified(false))}
+      show={show}
+      onHide={() => dispatch(setShow(false))}
       size='lg'
       aria-labelledby='contained-modal-title-vcenter'
       centered
