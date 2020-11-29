@@ -10,7 +10,7 @@ let store
 const middlewares = []
 const mockStore = configureStore(middlewares)
 
-test('assert that Modal is only shown when show status is set to true', () => {
+test('assert that Modal is only shown when show state is set to true', () => {
   initialState = { show: false }
   store = mockStore(initialState)
   investmentFormResponse = render(
@@ -32,7 +32,7 @@ test('assert that Modal is only shown when show status is set to true', () => {
   expect(investmentFormResponse.queryByRole('dialog')).toBeDefined()
 })
 
-test('assert that Modal Title is set based on the qualified and badRequest statuses', () => {
+test('assert that Modal Title is set based on the qualified and badRequest states', () => {
   initialState = { show: true, qualified: false, badRequest: false }
   store = mockStore(initialState)
   investmentFormResponse = render(
@@ -88,4 +88,78 @@ test('assert that Modal Title is set based on the qualified and badRequest statu
       investmentFormResponse.queryById('contained-modal-title-vcenter')
     )
   ).toEqual('Bad Request')
+})
+
+test('assert that Modal Body Header is set based on the qualified and badRequest states', () => {
+  initialState = { show: true, qualified: false, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  expect(
+    getNodeText(
+      investmentFormResponse.queryByText(
+        (content, element) =>
+          element.tagName === 'H4' &&
+          element.parentElement.className === 'modal-body'
+      )
+    )
+  ).toEqual('Sorry')
+
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse.rerender(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  expect(
+    getNodeText(
+      investmentFormResponse.queryByText(
+        (content, element) =>
+          element.tagName === 'H4' &&
+          element.parentElement.className === 'modal-body'
+      )
+    )
+  ).toEqual('Congratulations!')
+
+  initialState = { show: true, qualified: false, badRequest: true }
+  store = mockStore(initialState)
+  investmentFormResponse.rerender(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  expect(
+    getNodeText(
+      investmentFormResponse.queryByText(
+        (content, element) =>
+          element.tagName === 'H4' &&
+          element.parentElement.className === 'modal-body'
+      )
+    )
+  ).toEqual('Investment Amount is too big')
+
+  initialState = { show: true, qualified: true, badRequest: true }
+  store = mockStore(initialState)
+  investmentFormResponse.rerender(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  expect(
+    getNodeText(
+      investmentFormResponse.queryByText(
+        (content, element) =>
+          element.tagName === 'H4' &&
+          element.parentElement.className === 'modal-body'
+      )
+    )
+  ).toEqual('Investment Amount is too big')
 })
