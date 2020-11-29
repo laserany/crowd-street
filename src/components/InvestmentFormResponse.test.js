@@ -125,7 +125,7 @@ test('assert that Modal Body Header is set based on the qualified and badRequest
           element.parentElement.className === 'modal-body'
       )
     )
-  ).toEqual('Congratulations!')
+  ).toEqual('Congratulations! You have been qualified')
 
   initialState = { show: true, qualified: false, badRequest: true }
   store = mockStore(initialState)
@@ -172,6 +172,7 @@ test('assert that backdrop to static if not a bad request', () => {
       <InvestmentFormResponse />
     </Provider>
   )
+
   expect(
     investmentFormResponse.queryByText(
       (content, element) => element.className === 'fade modal-backdrop show'
@@ -185,6 +186,9 @@ test('assert that backdrop to static if not a bad request', () => {
       <InvestmentFormResponse />
     </Provider>
   )
+
+  screen.debug()
+
   expect(
     investmentFormResponse.queryByText(
       (content, element) => element.className === 'fade modal-backdrop show'
@@ -216,6 +220,4 @@ test('assert that backdrop to static if not a bad request', () => {
       (content, element) => element.className === 'fade modal-backdrop show'
     )
   ).toBeNull()
-
-  screen.debug()
 })
