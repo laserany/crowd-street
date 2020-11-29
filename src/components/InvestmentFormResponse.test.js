@@ -216,4 +216,6 @@ test('assert that backdrop to static if not a bad request', () => {
       (content, element) => element.className === 'fade modal-backdrop show'
     )
   ).toBeNull()
+
+  screen.debug()
 })
