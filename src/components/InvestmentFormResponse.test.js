@@ -159,7 +159,7 @@ test('assert that Modal Body Content is set based on the qualified and badReques
   expect(
     getNodeText(investmentFormResponse.queryByText(/.*/, { selector: 'p' }))
   ).toEqual(
-    'Your application has been denied. We apologize for any inconvenience. Please consider reconsider applying in the future and thank you.'
+    'Your application has been denied. We apologize for any inconvenience. Please contact customer service at 515-850-2047 or by email at Mustafa_Abusharkh@protonmail.com. Thank you.'
   )
 
   initialState = { show: true, qualified: true, badRequest: false }
@@ -170,11 +170,15 @@ test('assert that Modal Body Content is set based on the qualified and badReques
     </Provider>
   )
 
-  let formFields = investmentFormResponse.getAllByRole('textbox')
-
-  expect(formFields[0].id).toEqual('formHorizontalUserName')
-  expect(formFields[1].id).toEqual('formHorizontalPassword')
-  expect(formFields[2].id).toEqual('formHorizontalConfirmPassword')
+  expect(
+    investmentFormResponse.queryById('formHorizontalUserName')
+  ).toBeInTheDocument()
+  expect(
+    investmentFormResponse.queryById('formHorizontalPassword')
+  ).toBeInTheDocument()
+  expect(
+    investmentFormResponse.queryById('formHorizontalConfirmPassword')
+  ).toBeInTheDocument()
 
   initialState = { show: true, qualified: false, badRequest: true }
   store = mockStore(initialState)

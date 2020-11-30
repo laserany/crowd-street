@@ -118,6 +118,7 @@ const InvestmentFormResponse = () => {
                       <Form.Label>Password</Form.Label>
                       <Form.Control
                         name='password'
+                        type='password'
                         value={values.password}
                         onChange={handleChange}
                         onBlur={handleBlur}
@@ -139,6 +140,7 @@ const InvestmentFormResponse = () => {
                       <Form.Label>Confirm Password</Form.Label>
                       <Form.Control
                         name='confirmPassword'
+                        type='password'
                         value={values.confirmPassword}
                         onChange={handleChange}
                         onBlur={handleBlur}
@@ -169,8 +171,8 @@ const InvestmentFormResponse = () => {
           ) : (
             <p>
               Your application has been denied. We apologize for any
-              inconvenience. Please consider reconsider applying in the future
-              and thank you.
+              inconvenience. Please contact customer service at 515-850-2047 or
+              by email at Mustafa_Abusharkh@protonmail.com. Thank you.
             </p>
           )}
         </Modal.Body>
