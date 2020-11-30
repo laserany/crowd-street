@@ -18,6 +18,6 @@ inside .github/workflows/frontend.yml file.
 * The response generated from the backend is one out of three. Either bad request response in case of very large investment amount, or qualified or disqualified based on the investment amount, total networth, yearly income and the credit score. 
 * After the response is sent back, redux states (qualified, badRequest) get updated accordingly and (show) state gets set to true that would allow the 2nd component to appear (which is represented by a modal).
 * The investment form response component (which is a modal) will response accordingly based on the redux states updated by the request(qualified, badRequest).
-* In case the application was qualified, a response will be in a shape of a another form (used formik + yup as well) that has 3 fields (username, password and confirm password) that are validated accordingly as well. Once the form is submitted successfully, a success message will be displayed.
+* In case the applicant was qualified, a response will be in a shape of a another form (used formik + yup as well) that has 3 fields (username, password and confirm password) that are validated accordingly as well. Once the form is submitted successfully, a success message will be displayed.
 * To not allow applicants to modify their applications, once users close out of the modal, they will be redirected to another page(www.crowdstreet.com) and all the application states will be initialized as well.
 * More details about the project are provided within the project comments.
