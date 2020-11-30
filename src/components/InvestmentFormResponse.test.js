@@ -6,6 +6,10 @@ import render, {
   accountCreationFormSubmitter,
 } from './InvestmentFormResponse.test.helper'
 import * as react from 'react'
+import * as redux from 'react-redux'
+import { setQualified } from '../slices/QualifiedSlice'
+import { setBadRequest } from '../slices/BadRequestSlice'
+import { setShow } from '../slices/ShowSlice'
 
 let investmentFormResponse
 let initialState
@@ -243,9 +247,11 @@ test('assert that all form fields are required and invalid feedback is provided'
 })
 
 test('assert that form is submitted successfully for form fields that pass validation', async () => {
-  const setSubmitted = jest.fn()
-  const useStateMock = (initState) => [initState, setSubmitted]
-  jest.spyOn(react, 'useState').mockImplementation(useStateMock)
+  const setSubmittedMock = jest.fn()
+  const useStateMock = (initState) => [initState, setSubmittedMock]
+  const setSubmittedSpy = jest
+    .spyOn(react, 'useState')
+    .mockImplementation(useStateMock)
   initialState = { show: true, qualified: true, badRequest: false }
   store = mockStore(initialState)
   investmentFormResponse = render(
@@ -256,9 +262,177 @@ test('assert that form is submitted successfully for form fields that pass valid
 
   await accountCreationFormSubmitter(
     investmentFormResponse,
-    'Mustafa@crowdstreets.com',
+    'Mustafa@crowdstreet.com',
     'password1234',
     'password1234'
   )
-  expect(setSubmitted).toHaveBeenCalledWith(true)
+  expect(setSubmittedMock).toHaveBeenCalledWith(true)
+  setSubmittedSpy.mockRestore()
+})
+
+test('validate userName input', async () => {
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    '',
+    'password1234',
+    'password1234'
+  )
+
+  expect(
+    investmentFormResponse.getByText('userName is a required field')
+  ).toBeDefined()
+
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'Mustafa1234',
+    'password1234',
+    'password1234'
+  )
+
+  expect(
+    investmentFormResponse.getByText(
+      'Invalid username! Please provide a valid username (e.g johndoe@example.com)'
+    )
+  ).toBeDefined()
+})
+
+test('validate password input', async () => {
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'Mustafa@crowdstreet.com',
+    '',
+    'pass1234'
+  )
+
+  expect(
+    investmentFormResponse.getByText('password is a required field')
+  ).toBeDefined()
+
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'Mustafa@crowdstreet.com',
+    'pass1234',
+    'pass1234'
+  )
+
+  expect(
+    investmentFormResponse.getByText('Password must be more than 8 digits')
+  ).toBeDefined()
+
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'Mustafa@crowdstreet.com',
+    'mustafapassword',
+    'mustafapassword'
+  )
+
+  expect(
+    investmentFormResponse.getByText(
+      'Password must include atleast one Number or Special Character'
+    )
+  ).toBeDefined()
+})
+
+test('validate confirmPassword input', async () => {
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'mustafa@crowdstreet.com',
+    'password1234',
+    ''
+  )
+
+  expect(
+    investmentFormResponse.getByText('confirmPassword is a required field')
+  ).toBeDefined()
+
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'mustafa@crowdstreet.com',
+    'password1234',
+    'password5678'
+  )
+
+  expect(
+    investmentFormResponse.getByText('Password does not match')
+  ).toBeDefined()
+})
+
+test('assert that successful message is being displayed when form is submitted', async () => {
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'Mustafa@crowdstreet.com',
+    'password1234',
+    'password1234'
+  )
+
+  expect(getNodeText(investmentFormResponse.getByRole('heading'))).toEqual(
+    'Thank you!'
+  )
+  expect(
+    getNodeText(investmentFormResponse.queryByText(/.*/, { selector: 'p' }))
+  ).toEqual('Your account has been created. You may now close the window.')
+})
+
+test('assert that all states are reset when closing modal', async () => {
+  const setSubmittedMock = jest.fn()
+  const useStateMock = (initState) => [initState, setSubmittedMock]
+  const setSubmittedSpy = jest
+    .spyOn(react, 'useState')
+    .mockImplementation(useStateMock)
+  const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
+  const mockDispatchFn = jest.fn()
+  useDispatchSpy.mockReturnValue(mockDispatchFn)
+  const location = new URL('https://www.example.com')
+  location.replace = jest.fn()
+  delete window.location
+  window.location = location
+
+  initialState = { show: true, qualified: true, badRequest: true }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  const button = investmentFormResponse.getByRole('button')
+
+  await waitFor(() => fireEvent.click(button))
+
+  expect(setSubmittedMock).toHaveBeenCalledWith(false)
+  expect(mockDispatchFn).toHaveBeenCalledWith(setQualified(false))
+  expect(mockDispatchFn).toHaveBeenCalledWith(setBadRequest(false))
+  expect(mockDispatchFn).toHaveBeenCalledWith(setShow(false))
+  expect(location.replace).toHaveBeenCalledWith('https://www.crowdstreet.com/')
+
+  setSubmittedSpy.mockRestore()
 })
