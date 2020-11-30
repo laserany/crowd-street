@@ -19,7 +19,9 @@ const initialState = {}
 const store = mockStore(initialState)
 
 beforeEach(() => {
+  //had to use faketimers otherwise the tests will take very long time since i put a delay of 2 secs for simulating backend call
   global_jest.useFakeTimers()
+  //mocking redux store by using mockstore library
   investmentFormRequest = render(
     <Provider store={store}>
       <InvestmentFormRequest />

@@ -1,7 +1,7 @@
 import InvestmentFormResponse from './InvestmentFormResponse'
 import configureStore from 'redux-mock-store'
 import { Provider } from 'react-redux'
-import { screen, getNodeText, waitFor, fireEvent } from '@testing-library/react'
+import { getNodeText, waitFor, fireEvent } from '@testing-library/react'
 import render, {
   accountCreationFormSubmitter,
 } from './InvestmentFormResponse.test.helper'
@@ -12,7 +12,7 @@ import { setBadRequest } from '../slices/BadRequestSlice'
 import { setShow } from '../slices/ShowSlice'
 
 let investmentFormResponse
-let initialState
+let initialState //this is used to initialize our redux states. Very important when testing our response modal
 let store
 const middlewares = []
 const mockStore = configureStore(middlewares)
@@ -420,7 +420,7 @@ test('assert that all states are reset when closing modal', async () => {
   delete window.location
   window.location = location
 
-  initialState = { show: true, qualified: true, badRequest: true }
+  initialState = { show: true, qualified: false, badRequest: false }
   store = mockStore(initialState)
   investmentFormResponse = render(
     <Provider store={store}>

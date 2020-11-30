@@ -6,7 +6,7 @@ import App from './App'
 import reportWebVitals from './reportWebVitals'
 import { Provider } from 'react-redux'
 import store from './store'
-
+// The provider is used to supply the redux store to our App
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>

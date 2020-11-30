@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+//this state is used to determine whether the response modal should be shown or hidden. Accepts true or false
 const ShowSlice = createSlice({
   name: 'show',
   initialState: false,

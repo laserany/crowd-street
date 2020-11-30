@@ -8,6 +8,7 @@ import {
 
 const queryById = queryHelpers.queryByAttribute.bind(null, 'id')
 
+//customized the render function of react library to be able to query by the id attribute
 export default function customRender(ui, options) {
   return render(ui, {
     queries: { ...queries, queryById },
@@ -15,6 +16,7 @@ export default function customRender(ui, options) {
   })
 }
 
+//this function is used to submit the account creation form by clicking the (create new account) button
 export async function accountCreationFormSubmitter(
   accountCreationFormRequest,
   userNameInput,
