@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
+import './InvestmentFormResponse.css'
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap'
 import { useSelector, useDispatch } from 'react-redux'
 import { setShow } from '../slices/ShowSlice'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
+import { setQualified } from '../slices/QualifiedSlice'
+import { setBadRequest } from '../slices/BadRequestSlice'
 
 const schema = Yup.object({
   userName: Yup.string()
@@ -19,13 +22,13 @@ const schema = Yup.object({
       '^(.*[\\d !"#$%&\'()*+\\,\\-./:;<=>?@[\\\\\\]^_`{|}~]+.*)$',
       'Password must include atleast one Number or Special Character'
     ),
-  confirmPassword: Yup.string().oneOf(
-    [Yup.ref('password'), null],
-    'Password does not match'
-  ),
+  confirmPassword: Yup.string()
+    .required()
+    .oneOf([Yup.ref('password'), null], 'Password does not match'),
 })
 
 const InvestmentFormResponse = () => {
+  const [submitted, setSubmitted] = useState(false)
   const qualified = useSelector((state) => state.qualified)
   const badRequest = useSelector((state) => state.badRequest)
   const show = useSelector((state) => state.show)
@@ -34,12 +37,13 @@ const InvestmentFormResponse = () => {
     <Modal
       show={show}
       onHide={() => {
-        if (!qualified) {
-          window.open('about:blank', '_self')
-          window.close()
-        } else dispatch(setShow(false))
+        setSubmitted(false)
+        dispatch(setQualified(false))
+        dispatch(setBadRequest(false))
+        dispatch(setShow(false))
+        window.location.replace('https://www.crowdstreet.com/')
       }}
-      backdrop={!badRequest && 'static'}
+      backdrop={badRequest ? true : 'static'}
       size='lg'
       aria-labelledby='contained-modal-title-vcenter'
       centered
@@ -53,109 +57,124 @@ const InvestmentFormResponse = () => {
             : 'Disqualified'}
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <h4>
-          {badRequest
-            ? 'Investment Amount is too big'
-            : qualified
-            ? 'Congratulations!'
-            : 'Sorry'}
-        </h4>
-        {!qualified ? (
-          <Formik
-            validationSchema={schema}
-            onSubmit={(values) => console.log(values)}
-            initialValues={{
-              userName: '',
-              password: '',
-              confirmPassword: '',
-            }}
-          >
-            {({
-              handleSubmit,
-              handleChange,
-              handleBlur,
-              touched,
-              values,
-              errors,
-            }) => (
-              <Form noValidate onSubmit={handleSubmit}>
-                <Form.Group as={Row} controlId='formHorizontalUserName'>
-                  <Col>
-                    <Form.Control
-                      name='userName'
-                      value={values.userName}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isValid={touched.userName && !errors.userName}
-                      isInvalid={touched.userName && !!errors.userName}
-                      placeholder='User Name'
-                    />
-                    <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-                    <Form.Control.Feedback type='invalid'>
-                      {errors.userName}
-                    </Form.Control.Feedback>
-                  </Col>
-                </Form.Group>
-                <Form.Group as={Row} controlId='formHorizontalPassword'>
-                  <Col>
-                    <Form.Control
-                      name='password'
-                      value={values.password}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isValid={touched.password && !errors.password}
-                      isInvalid={touched.password && !!errors.password}
-                      placeholder='Password'
-                    />
-                    <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-                    <Form.Control.Feedback type='invalid'>
-                      {errors.password}
-                    </Form.Control.Feedback>
-                  </Col>
-                </Form.Group>
-                <Form.Group as={Row} controlId='formHorizontalConfirmPassword'>
-                  <Col>
-                    <Form.Control
-                      name='confirmPassword'
-                      value={values.confirmPassword}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isValid={
-                        touched.confirmPassword && !errors.confirmPassword
-                      }
-                      isInvalid={
-                        touched.confirmPassword && !!errors.confirmPassword
-                      }
-                      placeholder='Confirm Password'
-                    />
-                    <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-                    <Form.Control.Feedback type='invalid'>
-                      {errors.confirmPassword}
-                    </Form.Control.Feedback>
-                  </Col>
-                </Form.Group>
-                <Form.Group as={Row} controlId='formHorizontalSubmitButton'>
-                  <Col>
-                    <Button variant='primary' type='submit'>
-                      Create new Account!
-                    </Button>
-                  </Col>
-                </Form.Group>
-              </Form>
-            )}
-          </Formik>
-        ) : (
-          <p>
-            Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-            dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta
-            ac consectetur ac, vestibulum at eros.
-          </p>
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={() => dispatch(setShow(false))}>Close</Button>
-      </Modal.Footer>
+      {submitted ? (
+        <Modal.Body>
+          <h4>Thank you!</h4>
+          <p>Your account has been created. You may now close the window.</p>
+        </Modal.Body>
+      ) : (
+        <Modal.Body>
+          <h4>
+            {badRequest
+              ? 'Investment Amount is too big'
+              : qualified
+              ? 'Congratulations! You have been qualified'
+              : 'Sorry'}
+          </h4>
+          {badRequest ? (
+            <p>
+              Please revisit your investment application form and correct the
+              investment amount.
+            </p>
+          ) : qualified ? (
+            <Formik
+              validationSchema={schema}
+              onSubmit={(values) => setSubmitted(true)}
+              initialValues={{
+                userName: '',
+                password: '',
+                confirmPassword: '',
+              }}
+            >
+              {({
+                handleSubmit,
+                handleChange,
+                handleBlur,
+                touched,
+                values,
+                errors,
+              }) => (
+                <Form noValidate onSubmit={handleSubmit}>
+                  <Form.Group as={Row} controlId='formHorizontalUserName'>
+                    <Col>
+                      <Form.Label>User name</Form.Label>
+                      <Form.Control
+                        name='userName'
+                        value={values.userName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        isValid={touched.userName && !errors.userName}
+                        isInvalid={touched.userName && !!errors.userName}
+                        placeholder='Enter User name'
+                      />
+                      <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+                      <Form.Control.Feedback type='invalid'>
+                        {errors.userName}
+                      </Form.Control.Feedback>
+                    </Col>
+                  </Form.Group>
+                  <Form.Group as={Row} controlId='formHorizontalPassword'>
+                    <Col>
+                      <Form.Label>Password</Form.Label>
+                      <Form.Control
+                        name='password'
+                        value={values.password}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        isValid={touched.password && !errors.password}
+                        isInvalid={touched.password && !!errors.password}
+                        placeholder='Enter Password'
+                      />
+                      <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+                      <Form.Control.Feedback type='invalid'>
+                        {errors.password}
+                      </Form.Control.Feedback>
+                    </Col>
+                  </Form.Group>
+                  <Form.Group
+                    as={Row}
+                    controlId='formHorizontalConfirmPassword'
+                  >
+                    <Col>
+                      <Form.Label>Confirm Password</Form.Label>
+                      <Form.Control
+                        name='confirmPassword'
+                        value={values.confirmPassword}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        isValid={
+                          touched.confirmPassword && !errors.confirmPassword
+                        }
+                        isInvalid={
+                          touched.confirmPassword && !!errors.confirmPassword
+                        }
+                        placeholder='Re-type your Password'
+                      />
+                      <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+                      <Form.Control.Feedback type='invalid'>
+                        {errors.confirmPassword}
+                      </Form.Control.Feedback>
+                    </Col>
+                  </Form.Group>
+                  <Form.Group as={Row} controlId='formHorizontalSubmitButton'>
+                    <Col>
+                      <Button variant='primary' type='submit'>
+                        Create new Account!
+                      </Button>
+                    </Col>
+                  </Form.Group>
+                </Form>
+              )}
+            </Formik>
+          ) : (
+            <p>
+              Your application has been denied. We apologize for any
+              inconvenience. Please consider reconsider applying in the future
+              and thank you.
+            </p>
+          )}
+        </Modal.Body>
+      )}
     </Modal>
   )
 }

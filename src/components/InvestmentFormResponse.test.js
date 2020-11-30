@@ -1,8 +1,11 @@
 import InvestmentFormResponse from './InvestmentFormResponse'
 import configureStore from 'redux-mock-store'
 import { Provider } from 'react-redux'
-import { screen, getNodeText } from '@testing-library/react'
-import render from './InvestmentFormResponse.test.helper'
+import { screen, getNodeText, waitFor, fireEvent } from '@testing-library/react'
+import render, {
+  accountCreationFormSubmitter,
+} from './InvestmentFormResponse.test.helper'
+import * as react from 'react'
 
 let investmentFormResponse
 let initialState
@@ -99,15 +102,9 @@ test('assert that Modal Body Header is set based on the qualified and badRequest
     </Provider>
   )
 
-  expect(
-    getNodeText(
-      investmentFormResponse.queryByText(
-        (content, element) =>
-          element.tagName === 'H4' &&
-          element.parentElement.className === 'modal-body'
-      )
-    )
-  ).toEqual('Sorry')
+  expect(getNodeText(investmentFormResponse.getByRole('heading'))).toEqual(
+    'Sorry'
+  )
 
   initialState = { show: true, qualified: true, badRequest: false }
   store = mockStore(initialState)
@@ -117,15 +114,9 @@ test('assert that Modal Body Header is set based on the qualified and badRequest
     </Provider>
   )
 
-  expect(
-    getNodeText(
-      investmentFormResponse.queryByText(
-        (content, element) =>
-          element.tagName === 'H4' &&
-          element.parentElement.className === 'modal-body'
-      )
-    )
-  ).toEqual('Congratulations!')
+  expect(getNodeText(investmentFormResponse.getByRole('heading'))).toEqual(
+    'Congratulations! You have been qualified'
+  )
 
   initialState = { show: true, qualified: false, badRequest: true }
   store = mockStore(initialState)
@@ -135,15 +126,9 @@ test('assert that Modal Body Header is set based on the qualified and badRequest
     </Provider>
   )
 
-  expect(
-    getNodeText(
-      investmentFormResponse.queryByText(
-        (content, element) =>
-          element.tagName === 'H4' &&
-          element.parentElement.className === 'modal-body'
-      )
-    )
-  ).toEqual('Investment Amount is too big')
+  expect(getNodeText(investmentFormResponse.getByRole('heading'))).toEqual(
+    'Investment Amount is too big'
+  )
 
   initialState = { show: true, qualified: true, badRequest: true }
   store = mockStore(initialState)
@@ -153,18 +138,12 @@ test('assert that Modal Body Header is set based on the qualified and badRequest
     </Provider>
   )
 
-  expect(
-    getNodeText(
-      investmentFormResponse.queryByText(
-        (content, element) =>
-          element.tagName === 'H4' &&
-          element.parentElement.className === 'modal-body'
-      )
-    )
-  ).toEqual('Investment Amount is too big')
+  expect(getNodeText(investmentFormResponse.getByRole('heading'))).toEqual(
+    'Investment Amount is too big'
+  )
 })
 
-test('assert that backdrop to static if not a bad request', () => {
+test('assert that Modal Body Content is set based on the qualified and badRequest states', () => {
   initialState = { show: true, qualified: false, badRequest: false }
   store = mockStore(initialState)
   investmentFormResponse = render(
@@ -172,11 +151,26 @@ test('assert that backdrop to static if not a bad request', () => {
       <InvestmentFormResponse />
     </Provider>
   )
+
   expect(
-    investmentFormResponse.queryByText(
-      (content, element) => element.className === 'fade modal-backdrop show'
-    )
-  ).toBeDefined()
+    getNodeText(investmentFormResponse.queryByText(/.*/, { selector: 'p' }))
+  ).toEqual(
+    'Your application has been denied. We apologize for any inconvenience. Please consider reconsider applying in the future and thank you.'
+  )
+
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse.rerender(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  let formFields = investmentFormResponse.getAllByRole('textbox')
+
+  expect(formFields[0].id).toEqual('formHorizontalUserName')
+  expect(formFields[1].id).toEqual('formHorizontalPassword')
+  expect(formFields[2].id).toEqual('formHorizontalConfirmPassword')
 
   initialState = { show: true, qualified: false, badRequest: true }
   store = mockStore(initialState)
@@ -186,24 +180,11 @@ test('assert that backdrop to static if not a bad request', () => {
     </Provider>
   )
   expect(
-    investmentFormResponse.queryByText(
-      (content, element) => element.className === 'fade modal-backdrop show'
-    )
-  ).toBeNull()
-
-  initialState = { show: true, qualified: true, badRequest: false }
-  store = mockStore(initialState)
-  investmentFormResponse.rerender(
-    <Provider store={store}>
-      <InvestmentFormResponse />
-    </Provider>
+    getNodeText(investmentFormResponse.queryByText(/.*/, { selector: 'p' }))
+  ).toEqual(
+    'Please revisit your investment application form and correct the investment amount.'
   )
-  expect(
-    investmentFormResponse.queryByText(
-      (content, element) => element.className === 'fade modal-backdrop show'
-    )
-  ).toBeDefined()
-
+  ;('')
   initialState = { show: true, qualified: true, badRequest: true }
   store = mockStore(initialState)
   investmentFormResponse.rerender(
@@ -212,10 +193,72 @@ test('assert that backdrop to static if not a bad request', () => {
     </Provider>
   )
   expect(
-    investmentFormResponse.queryByText(
-      (content, element) => element.className === 'fade modal-backdrop show'
-    )
-  ).toBeNull()
+    getNodeText(investmentFormResponse.queryByText(/.*/, { selector: 'p' }))
+  ).toEqual(
+    'Please revisit your investment application form and correct the investment amount.'
+  )
+})
 
-  screen.debug()
+test('assert that the Account Creation form has correct placeholders', () => {
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  expect(
+    investmentFormResponse.getByPlaceholderText('Enter User name')
+  ).toBeDefined()
+  expect(
+    investmentFormResponse.getByPlaceholderText('Enter Password')
+  ).toBeDefined()
+  expect(
+    investmentFormResponse.getByPlaceholderText('Re-type your Password')
+  ).toBeDefined()
+})
+
+test('assert that all form fields are required and invalid feedback is provided', async () => {
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  const button = investmentFormResponse.getByRole('button', {
+    name: 'Create new Account!',
+  })
+
+  await waitFor(() => fireEvent.click(button))
+
+  const invalidFeedbacks = investmentFormResponse.queryAllByText(
+    'is a required field',
+    { exact: false }
+  )
+
+  expect(invalidFeedbacks.length).toEqual(3)
+})
+
+test('assert that form is submitted successfully for form fields that pass validation', async () => {
+  const setSubmitted = jest.fn()
+  const useStateMock = (initState) => [initState, setSubmitted]
+  jest.spyOn(react, 'useState').mockImplementation(useStateMock)
+  initialState = { show: true, qualified: true, badRequest: false }
+  store = mockStore(initialState)
+  investmentFormResponse = render(
+    <Provider store={store}>
+      <InvestmentFormResponse />
+    </Provider>
+  )
+
+  await accountCreationFormSubmitter(
+    investmentFormResponse,
+    'Mustafa@crowdstreets.com',
+    'password1234',
+    'password1234'
+  )
+  expect(setSubmitted).toHaveBeenCalledWith(true)
 })

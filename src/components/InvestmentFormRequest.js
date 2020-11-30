@@ -60,6 +60,8 @@ const InvestmentFormRequest = () => {
                   status: 200,
                 })
           }).then((response) => {
+            dispatch(setBadRequest(false))
+            dispatch(setQualified(false))
             dispatch(setShow(true))
             if (response.status === 400) dispatch(setBadRequest(true))
             else if (response.body === 'Qualified') dispatch(setQualified(true))

@@ -166,7 +166,7 @@ test('assert that credit score input is a number between 300-850', async () => {
   )
 })
 
-test('assert that qualified status is only set to true when conditions are met', async () => {
+test('assert that qualified state is only set to true when conditions are met', async () => {
   const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
   const mockDispatchFn = jest.fn()
   useDispatchSpy.mockReturnValue(mockDispatchFn)
@@ -290,7 +290,7 @@ test('assert that backend is called when form is submitted', async () => {
   )
 })
 
-test('assert that badRequest status is set to true when Investment Amount is over 9 million', async () => {
+test('assert that badRequest state is set to true when Investment Amount is over 9 million', async () => {
   const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
   const mockDispatchFn = jest.fn()
   useDispatchSpy.mockReturnValue(mockDispatchFn)
@@ -311,7 +311,7 @@ test('assert that badRequest status is set to true when Investment Amount is ove
   expect(mockDispatchFn).toHaveBeenLastCalledWith(setBadRequest(true))
 })
 
-test('assert that show status is always set to true whenever a form has been submitted successfully', async () => {
+test('assert that show state is always set to true whenever a form has been submitted successfully', async () => {
   const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
   const mockDispatchFn = jest.fn()
   useDispatchSpy.mockReturnValue(mockDispatchFn)
@@ -330,4 +330,26 @@ test('assert that show status is always set to true whenever a form has been sub
   })
 
   expect(mockDispatchFn).toHaveBeenCalledWith(setShow(true))
+})
+
+test('assert that badRequest and qualified state are initialized to false whenever a form has been submitted successfully', async () => {
+  const useDispatchSpy = jest.spyOn(redux, 'useDispatch')
+  const mockDispatchFn = jest.fn()
+  useDispatchSpy.mockReturnValue(mockDispatchFn)
+
+  await investmentFormSubmitter(
+    investmentFormRequest,
+    '1000.00',
+    'testInvestmentType',
+    '50000',
+    '25000.50',
+    '700'
+  )
+
+  await act(async () => {
+    global_jest.advanceTimersByTime(2000)
+  })
+
+  expect(mockDispatchFn).toHaveBeenCalledWith(setBadRequest(false))
+  expect(mockDispatchFn).toHaveBeenCalledWith(setQualified(false))
 })
