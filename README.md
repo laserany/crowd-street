@@ -12,6 +12,8 @@ inside .github/workflows/backend.yml file.
 2. one VM option must be passed which is 
 -Djasypt.encryptor.password=${password}.
 The password will be provided securely over email.
+3. preview features have to be enabled by your IDE or by appending --enable-preview to the command line/terminal.
+4. In order to run the project using command line, run mvn package command on the root to generate the jar file then run `java -jar --enable-preview -Djasypt.encryptor.password=${password} backend-0.0.1-SNAPSHOT.jar`.
 
 ## Part3: Overview of the project
 * The project uses Spring Boot, AWS Lambda (as 3rd service) and H2 as our in-memory database and storing sessions. 
