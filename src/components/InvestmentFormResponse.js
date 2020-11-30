@@ -71,7 +71,12 @@ const InvestmentFormResponse = () => {
               ? 'Congratulations! You have been qualified'
               : 'Sorry'}
           </h4>
-          {qualified ? (
+          {badRequest ? (
+            <p>
+              Please revisit your investment application form and correct the
+              investment amount.
+            </p>
+          ) : qualified ? (
             <Formik
               validationSchema={schema}
               onSubmit={(values) => setSubmitted(true)}
@@ -161,11 +166,6 @@ const InvestmentFormResponse = () => {
                 </Form>
               )}
             </Formik>
-          ) : badRequest ? (
-            <p>
-              Please revisit your investment application form and correct the
-              investment amount.
-            </p>
           ) : (
             <p>
               Your application has been denied. We apologize for any
