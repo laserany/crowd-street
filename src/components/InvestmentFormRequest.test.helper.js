@@ -1,5 +1,6 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
+//this function is being called by the test class to submit the form via react testing library by clicking the submit button
 export default async function investmentFormSubmitter(
   investmentFormRequest,
   investmentAmountInput,

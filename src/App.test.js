@@ -10,7 +10,7 @@ const mockStore = configureStore(middlewares)
 const initialState = {}
 const store = mockStore(initialState)
 
-test('assert that App Component has InvestmentForm and ', () => {
+test('assert that App Component has InvestmentFormRequest and InvestmentFormResponse components ', () => {
   const appRenderer = TestRenderer.create(
     <Provider store={store}>
       <App />

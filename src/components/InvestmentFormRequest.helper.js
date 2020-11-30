@@ -1,3 +1,4 @@
+//This is the mocked backend function that determines if an applicant is qualified for an investment
 export default function isQualified(values) {
   const investmentAmount = Number(values['investmentAmount'])
   const totalNetWorth = Number(values['totalNetWorth'])

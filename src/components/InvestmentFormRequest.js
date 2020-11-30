@@ -12,6 +12,7 @@ import { setShow } from '../slices/ShowSlice'
 
 window.formValues = {}
 
+//this schema is used for form validation
 const schema = Yup.object({
   investmentAmount: Yup.string()
     .required()
@@ -41,9 +42,12 @@ const schema = Yup.object({
 })
 
 const InvestmentFormRequest = () => {
+  //this spinner state spins the button when clicked to simulate backend call
   const [spinner, setSpinner] = useState(false)
+  //this useEffect is called when form is submitted
   useEffect(() => {
     if (spinner) {
+      //adding time delay of 2 secs to simulate fake call. using fetchmock to mock the fetch call
       setTimeout(() => {
         fetchMock.post(
           'https://www.crowdstreets.com/backend',
@@ -60,6 +64,7 @@ const InvestmentFormRequest = () => {
                   status: 200,
                 })
           }).then((response) => {
+            //resetting badrequest and qualified status to false > This is important for accurate results
             dispatch(setBadRequest(false))
             dispatch(setQualified(false))
             dispatch(setShow(true))

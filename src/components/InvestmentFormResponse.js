@@ -8,6 +8,7 @@ import * as Yup from 'yup'
 import { setQualified } from '../slices/QualifiedSlice'
 import { setBadRequest } from '../slices/BadRequestSlice'
 
+//schema for account creation form validation
 const schema = Yup.object({
   userName: Yup.string()
     .required()
@@ -28,22 +29,27 @@ const schema = Yup.object({
 })
 
 const InvestmentFormResponse = () => {
+  //submitted state identifies if the account creation form was submitted or not
   const [submitted, setSubmitted] = useState(false)
+  //qualified state provides state whether the applicant is qualified or not to apply
   const qualified = useSelector((state) => state.qualified)
+  //badRequest state is set to true for investments that are larger than 9 millions
   const badRequest = useSelector((state) => state.badRequest)
+  //show state is used to show or hide the modal
   const show = useSelector((state) => state.show)
   const dispatch = useDispatch()
   return (
     <Modal
       show={show}
       onHide={() => {
-        setSubmitted(false)
-        dispatch(setQualified(false))
-        dispatch(setBadRequest(false))
+        //this is called when clicking the x button on top right, we reset all states and redirect them to another page if it isn't a bad request
         dispatch(setShow(false))
-        window.location.replace('https://www.crowdstreet.com/')
+        dispatch(setQualified(false))
+        !badRequest && window.location.replace('https://www.crowdstreet.com/')
+        dispatch(setBadRequest(false))
+        setSubmitted(false)
       }}
-      backdrop={badRequest ? true : 'static'}
+      backdrop={badRequest ? true : 'static'} //we only want to allow users to be able to go back and modify their application in case they sent the wrong investment amount
       size='lg'
       aria-labelledby='contained-modal-title-vcenter'
       centered
